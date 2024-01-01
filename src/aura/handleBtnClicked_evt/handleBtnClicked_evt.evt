@@ -1,0 +1,9 @@
+<!--
+ - Created by yghwang on 2023-10-05.
+ -->
+
+<aura:event type="COMPONENT" description="handleBtnClicked_evt">
+    <aura:attribute type="String" name="valString1"/>
+    <aura:attribute type="Contact" name="objContact"/>
+    <aura:attribute type="Object" name="objVar"/>
+</aura:event>

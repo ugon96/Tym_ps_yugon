@@ -1,0 +1,13 @@
+<!--
+ - Created by yghwang on 2023-09-14.
+ -->
+
+<aura:component description="TymDealerPortalIframe" implements="force:hasRecordId,flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable,force:hasSObjectName,flexipage:availableForRecordHome,lightning:actionOverride">
+    <lightning:layout multipleRows="true">
+        <lightning:layoutItem size="12">
+            <div style="height:100%;">
+                <iframe style="width:100%; height:100%;" src="https://naver.com" />
+            </div>
+        </lightning:layoutItem>
+    </lightning:layout>
+</aura:component>

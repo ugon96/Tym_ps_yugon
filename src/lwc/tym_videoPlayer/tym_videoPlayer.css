@@ -1,0 +1,24 @@
+/*************************************************************
+ * @author : th.kim
+ * @date : 2023-11-29
+ * @group : 
+ * @group-content : 
+ * @description : 
+==============================================================
+ * Ver          Date            Author          Modification
+   1.0          2023-11-29      th.kim         Initial Version
+**************************************************************/
+
+/* Web */
+.video-player {
+    height: 50vh;
+    border-radius: 10px;
+}
+
+/* Moblie */
+@media screen and (max-width: 540px){
+    .video-player {
+        height: 30vh;
+        width: 100%;
+    }
+}

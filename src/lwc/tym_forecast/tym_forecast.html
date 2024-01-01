@@ -1,0 +1,392 @@
+<template>
+    <template if:true={isLoaded}>
+        <div class="slds-clearfix">
+            <div class="slds-size_1-of-1">
+                <!--Input-->
+                <div class="slds-float_left slds-m-bottom_large">
+                    <span>{label.Year}</span>
+                    <span class="slds-form-element__label slds-m-left_medium">
+                        <input type="text" class="slds-input" required="" onchange={handleYearChange} value={searchYear} />
+                    </span>
+                    <button class="slds-button slds-button_text-destructive" onclick={handleSearch}>
+                        {label.SearchBtn}
+                    </button>
+                </div>
+            </div>
+
+            <!--Table-->
+            <table class="slds-table slds-table_bordered slds-table_striped">
+                <col style="width: 22%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+                <col style="width: 6%" />
+
+                <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="Product">
+                            {label.Products}
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="Label"></div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="1">
+                            1
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="2">
+                            2
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="3">
+                            3
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="4">
+                            4
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="5">
+                            5
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="6">
+                            6
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="7">
+                            7
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="8">
+                            8
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="9">
+                            9
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="10">
+                            10
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="11">
+                            11
+                        </div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate slds-align_absolute-center" title="12">
+                            12
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <!--Table Data-->
+                <tbody>
+                <!--Have Forecast Start-->
+                <template if:true={productDataList}>
+                    <template for:each={productDataList} for:item="product" for:index="indexScreen">
+                        <tr class="slds-hint-parent" key={product.Id}>
+                            <th data-label="Item Name" scope="row" class="slds-border_right" rowspan="1">
+                                <div class="slds-grid slds-align_absolute-center" style="position: relative;">
+                                    <template lwc:if={product.Id}>
+                                        <div class="slds-size_2-of-3 slds-text-align_left">
+                                            <p class="slds-truncate" style="max-width: 200px;">{product.Name}</p>
+                                        </div>
+                                        <div class="slds-size_1-of-3 slds-text-align_right">
+                                            <img src={product.imgUrl}/>
+                                        </div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="slds-size_1-of-1 slds-text-align_left">
+                                            <input type="text" readonly="readonly" class="slds-size_1-of-1 dropdown-input" value="" data-idx={indexScreen} onclick={toggleDropdown}>
+                                        </div>
+                                    </template>
+                                </div>
+                                <template lwc:if={product.isDropdown}>
+                                    <div class="slds-grid slds-wrap slds-size_1-of-1 dropdown slide-down">
+                                        <template for:each={filteredOptions} for:item="option" for:index="optionIndex">
+                                            <button key={option.Id} onclick={dropdownClick} data={option}
+                                                data-idx={indexScreen} data-name={option.Name} data-optionidx={optionIndex}
+                                                data-id={option.Id} data-img={option.imgUrl} data-forecast={option.listForecast}
+                                                class="slds-size_1-of-1 slds-p-around_x-small">{option.Name}</button>
+                                        </template>
+                                    </div>
+                                </template>
+                            </th>
+                            <!--Start have forecast-->
+                            <template for:each={product.listForecast} for:item="record">
+                                <td data-label="Label" key={record.Id}>
+                                    <div class="slds-text-align_center">Quantity</div>
+                                </td>
+                                <td data-label="1" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="1" variant="label-hidden"
+                                                         value={record.X1__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="2" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="2" variant="label-hidden"
+                                                         value={record.X2__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="3" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="3" variant="label-hidden"
+                                                         value={record.X3__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="4" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="4" variant="label-hidden"
+                                                         value={record.X4__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="5" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="5" variant="label-hidden"
+                                                         value={record.X5__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="6" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="6" variant="label-hidden"
+                                                         value={record.X6__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="7" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="7" variant="label-hidden"
+                                                         value={record.X7__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="8" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="8" variant="label-hidden"
+                                                         value={record.X8__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="9" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="9" variant="label-hidden"
+                                                         value={record.X9__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="10" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="10" variant="label-hidden"
+                                                         value={record.X10__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="11" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="11" variant="label-hidden"
+                                                         value={record.X11__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="12" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number"
+                                                         onchange={handleNumberChange} data-indexrow={indexScreen}
+                                                         data-indexcolumn="12" variant="label-hidden"
+                                                         value={record.X12__c}></lightning-input>
+                                    </div>
+                                </td>
+                                <td key={product.Id}>
+                                    <lightning-button-icon
+                                        data-idx={indexScreen} data-id={product.Id} data-fid={record.Id}
+                                        icon-name="utility:delete" alternative-text="Delete"
+                                        title="Delete" onclick={handleDelete}>
+                                    </lightning-button-icon>
+                                </td>
+                            </template>
+                        </tr>
+                        <!-- Start have forecast -->
+                        <!-- <tr class="slds-hint-parent" key={product.Id}>
+                            <template for:each={product.listForecast} for:item="record">
+                                <td data-label="Label" key={record.Id}>
+                                    <div class="slds-text-align_center">%</div>
+                                </td>
+                                <td data-label="1" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability01"
+                                                         value={record.Probability01__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="1"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="2" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability02"
+                                                         value={record.Probability02__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="2"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="3" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability03"
+                                                         value={record.Probability03__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="3"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="4" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability04"
+                                                         value={record.Probability04__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="4"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="5" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability05"
+                                                         value={record.Probability05__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="5"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="6" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability06"
+                                                         value={record.Probability06__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="6"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="7" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability07"
+                                                         value={record.Probability07__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="7"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="8" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability08"
+                                                         value={record.Probability08__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="8"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="9" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability09"
+                                                         value={record.Probability09__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="9"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="10" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability10"
+                                                         value={record.Probability10__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="10"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="11" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability11"
+                                                         value={record.Probability11__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="11"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                                <td data-label="12" key={record.Id}>
+                                    <div class="slds-truncate">
+                                        <lightning-input class="widthCustom" type="number" name="Probability12"
+                                                         value={record.Probability12__c} onchange={handleNumberChange}
+                                                         data-indexrow={indexScreen} data-indexcolumn="12"
+                                                         formatter="percent-fixed" variant="label-hidden"></lightning-input>
+                                    </div>
+                                </td>
+                            </template>
+                        </tr> -->
+                    </template>
+                </template>
+                </tbody>
+            </table>
+
+            <!-- Add Button -->
+            <template lwc:if={isAddButtonTrue}>
+                <div class="slds-float_left slds-m-top_large">
+                    <button class="slds-button slds-button_text-destructive" onclick={handleAdd}>
+                        + Add Product
+                    </button>
+                </div>
+            </template>
+
+            <!--Button Save-->
+            <template if:false={isHideBtn}>
+                <div class="slds-align_absolute-center slds-m-top_large">
+                    <button class="slds-button slds-button_text-destructive" onclick={handleCancel}>
+                        {label.CancelBtn}
+                    </button>
+                    <button class="slds-button slds-button_destructive" onclick={handleSave}>
+                        {label.SaveBtn}
+                    </button>
+                </div>
+            </template>
+        </div>
+    </template>
+    <!--Spinner-->
+    <template if:false={isLoaded}>
+        <div class="demo-only demo--inverse" style="position: relative">
+            <div class="slds-spinner_container">
+                <div role="status" class="slds-spinner slds-spinner_medium">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,904 @@
+<!--
+ - Created by yghwang on 2023-09-01.
+ -->
+
+<aura:component description="CreateRegistration" controller="CreateRegistrationController"
+                implements="force:hasRecordId,flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable,force:hasSObjectName,flexipage:availableForRecordHome,lightning:actionOverride,forceCommunity:availableForAllPageTypes"
+                access="global"
+>
+    <lightning:workspaceAPI aura:id="workspace"/>
+
+    <!--  For Select Date  -->
+    <aura:attribute name="dateOfSales" type="Date"/>
+
+    <!-- For Select   -->
+    <aura:attribute name="dealerList" type="List" access="PRIVATE" default="[{'Id':null, 'Name':'----none----'}]"/>
+    <aura:attribute name="selectedDealer" type="String" access="PRIVATE" default=""/>
+
+    <!-- For Accordion   -->
+    <aura:attribute name="retailProgramActiveSections" type="List" default="[]"/>
+    <aura:attribute name="retailProgramActiveSectionsMessage" type="String" default=""/>
+    <aura:attribute name="warrantyDetailsActiveSections" type="List" default="[]"/>
+    <aura:attribute name="warrantyDetailsActiveSectionsMessage" type="String" default=""/>
+    <aura:attribute name="warrantyType" type="String" default=""/>
+
+    <aura:attribute name="rebateOptions" type="List" default="[
+    {'label': 'Issue Check', 'value': 'Issue Check'},
+    {'label': 'Issue Credit', 'value': 'Issue Credit'}
+    ]"/>
+    <aura:attribute name="incentiveOptions" type="List" default="[
+    {'label': 'Issue Check', 'value': 'Issue Check'},
+    {'label': 'Issue Credit', 'value': 'Issue Credit'}
+    ]"/>
+    <aura:attribute name="applyForRebateValue" type="String" default="Issue Check"/>
+    <aura:attribute name="applyForIncentiveValue" type="String" default="Issue Check"/>
+
+    <aura:attribute name="isNotStock" type="Boolean" default="true"/>
+
+    <!-- Search Customer -->
+    <aura:attribute name="isSearching" type="Boolean" default="false"/>
+    <aura:attribute name="keyword" type="String" default=""/>
+    <aura:attribute name="isSearchResult" type="Boolean" default="false"/>
+    <aura:attribute name="selectedCustomer" type="Contact"/>
+
+    <!--  Create Customer Modal  -->
+    <aura:attribute name="isCreateCustomerModalOpen" type="Boolean" default="false"/>
+
+    <!--  Product Information  -->
+    <!-- 검색된 Asset -->
+    <aura:attribute name="searchedAssetRecordId" type="String" description="검색된 Asset RecordId"/>
+    <aura:attribute name="searchedAssetLabel" type="String" description="검색된 Asset Label"/>
+    <aura:attribute name="searchedAssetRecord" type="Object" description="검색된 Asset 레코드"/>
+    <!--  Tractor    -->
+    <aura:attribute name="selectedTractorRecordId" type="String" description="트랙터 RecordId"/>
+    <aura:attribute name="selectedTractorLabel" type="String" description="트랙터 Label"/>
+    <aura:attribute name="selectedTractorRecord" type="Object" description="트랙터 레코드"/>
+    <!--  Loader    -->
+    <aura:attribute name="selectedLoaderRecordId" type="String" description="로더 RecordId"/>
+    <aura:attribute name="selectedLoaderLabel" type="String" description="로더 Label"/>
+    <aura:attribute name="selectedLoaderRecord" type="Object" description="로더 레코드"/>
+    <!--  Backhoe    -->
+    <aura:attribute name="selectedBackhoeRecordId" type="String" description="Backhoe RecordId"/>
+    <aura:attribute name="selectedBackhoeLabel" type="String" description="Backhoe Label"/>
+    <aura:attribute name="selectedBackhoeRecord" type="Object" description="Backhoe 레코드"/>
+    <!--  Mid Mount Mower    -->
+    <aura:attribute name="selectedMowerRecordId" type="String" description="Mid Mount Mower RecordId"/>
+    <aura:attribute name="selectedMowerLabel" type="String" description="Mid Mount Mower Label"/>
+    <aura:attribute name="selectedMowerRecord" type="Object" description="Mid Mount Mower 레코드"/>
+    <!--  Cabin    -->
+    <aura:attribute name="selectedCabinRecordId" type="String" description="Cabin RecordId"/>
+    <aura:attribute name="selectedCabinLabel" type="String" description="Cabin Label"/>
+    <aura:attribute name="selectedCabinRecord" type="Object" description="Cabin 레코드"/>
+
+    <!-- Required CheckBox Attribute   -->
+    <aura:attribute name="isExplainedWarrantyTerm" type="Boolean" default="false"/>
+    <aura:attribute name="isExplainedWarrantyCoverage" type="Boolean" default="false"/>
+    <aura:attribute name="isReviewedOperationAndProcedure" type="Boolean" default="false"/>
+    <aura:attribute name="isKeptSignedCopyOfRegistration" type="Boolean" default="false"/>
+
+    <!-- Spinner    -->
+    <aura:attribute name="toggleSpinner"        type="Boolean"  default="false"/>
+
+    <!--  Handler    -->
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    <aura:handler name="selectCustomerEvt" event="c:handleBtnClicked_evt" action="{!c.handleSelectCustomerEventFire}"/>
+    <aura:handler name="closeSearchResultEvt" event="c:handleCloseBtnClicked_evt" action="{!c.closeSearchResultModal}"/>
+    <aura:handler name="createNewCustomerEvt" event="c:handleBtnClicked_evt"
+                  action="{!c.handleCreateCustomerEventFire}"/>
+    <aura:handler name="closeCreateCustomerEvt" event="c:handleCloseBtnClicked_evt"
+                  action="{!c.closeCreateCustomerModal}"/>
+    <!--    <aura:handler name="tractorSelectedEvt" event="c:DN_LookupSelected_evt" action="{!c.handleTractorSelectedEvt}"/>-->
+
+
+    <aura:if isTrue="{!v.toggleSpinner}">
+        <lightning:spinner aura:id="toggleSpinner" variant="brand" size="medium" />
+    </aura:if>
+    <div class="slds-card">
+        <div class="header slds-p-around_small">
+            <span id="header-title">{!$Label.c.CreateRegistration}</span>
+            <div id="header-button-container" class="slds-float_right">
+                <lightning:button name="{!$Label.c.Save}" label="{!$Label.c.Save}"
+                                  onclick="{!c.handleOnClickSaveButton}"
+                                  variant="brand"></lightning:button>
+                <lightning:button name="{!$Label.c.Discard}" label="{!$Label.c.Discard}" onclick="{!c.handleOnclickDiscardButton}"></lightning:button>
+            </div>
+        </div>
+        <hr/>
+        <div class="body slds-p-around_small">
+            <lightning:layout multipleRows="true">
+                <!--      Sale Information              -->
+                <lightning:layoutItem class="slds-p-around_small" size="12">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-title" id="Sale-Info-title">
+                               <span>
+                                   {!$Label.c.Sales_Information}
+                               </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div id="Sale-Info-subTitle">
+                                <span>
+                                    {!$Label.c.Sales_Information_Description}
+                               </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:select name="SalesPerson" label="{!$Label.c.SalesPerson}" aura:id="dealerId"
+                                              value="{!v.selectedDealer}" required="true">
+                                <aura:iteration items="{!v.dealerList}" var="option">
+                                    <option text="{!option.Name}" value="{!option.Id}" selected="{!option.selected}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="3">
+                            <lightning:input aura:id="DateOfSales" label="Date Of Sales" type="date" name="Date Of Sales" required="{!if(v.isNotStock == true, true, false)}"
+                                             value="{!v.dateOfSales}"></lightning:input>
+                            <lightning:helptext class="DateOfSales-helptext"
+                                                content="If warranty type is commercial or non-commercial, you must fill the date of sales field."/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="12">
+                    <hr/>
+                </lightning:layoutItem>
+                <!--       Customer Information         -->
+
+                <lightning:layoutItem class="slds-p-around_small" size="12">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <div class="content-title" id="customer-information-subtitle">
+                                <span>
+                                    {!$Label.c.Customer_Information}
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <div class="new-customer-button-container">
+                                <div>
+                                    <lightning:button name="{!$Label.c.Create_New_Customer}"
+                                                      label="{!$Label.c.Create_New_Customer}"
+                                                      onclick="{!c.handleCreateNewCustomerBtnClicked}"></lightning:button>
+                                </div>
+                                <div>
+                                    <p class="new-customer-button-info">{!$Label.c.Create_Registration_New_Customer_Btn_Info}</p>
+                                </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <c:DN_Lookup aura:id="lookupEndCustomer"
+                                         uniqueLookupIdentifier="{!'Contact-' + idx}"
+                                         objectName="Contact"
+                                         fieldSet="['Name', 'Email', 'Mobile__c', 'PhoneNumber__c', 'Address__c']"
+                                         whereCondition="{!'RecordType.DeveloperName = \'EndCustomer\''}"
+                                         limit="10000"
+                                         viewObjectName="Asset"
+                                         viewObjectId="{!v.recordId}"
+                                         comparisonField="['Name', 'Email', 'Mobile__c', 'PhoneNumber__c', 'Address__c']"
+                                         primaryDisplayField="Name"
+                                         alternateDisplayField="['Email', 'Mobile__c']"
+                                         minimumCharacter="2"
+                                         lightningIconName="standard:contact"
+                                         selectedObject="{!v.selectedCustomer}"
+                                         compact="false"
+                                         selectedLookupRemoved = "{!c.handleSearchCustomerLookupRemoved}"
+                            />
+                            <!--<div aura:id="searchCustomer" onkeyup="{! c.handleKeyUp }">
+                                <lightning:input
+                                        aura:id="search-customer"
+                                        name="search-customer"
+                                        label="{!$Label.c.Create_Registration_Search_Label}"
+                                        type="search"
+                                />
+                            </div>-->
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:input class="padding-left" readonly="true" aura:id="Name" label="Name"
+                                             name="Name" type="text"
+                                             value="{!v.selectedCustomer.Name}"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:input class="padding-left" readonly="true" aura:id="CustomerEmailAddress"
+                                             label="Customer Email Address" name="Customer Email Address"
+                                             type="text" value="{!v.selectedCustomer.Email}"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:input class="padding-left" readonly="true" aura:id="CustomerHomePhone"
+                                             label="Customer Home Phone"
+                                             name="Customer Home Phone"
+                                             type="text" value="{!v.selectedCustomer.PhoneNumber__c}"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:input class="padding-left" readonly="true" aura:id="CustomerMobilePhone"
+                                             label="Customer Mobile Phone"
+                                             name="Customer Mobile Phone"
+                                             type="text" value="{!v.selectedCustomer.Mobile__c}"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <lightning:input class="padding-left" readonly="true" aura:id="CustomerAddress"
+                                             label="Customer Address(Street, City, State Zip)" name="Customer Address"
+                                             type="text" value="{!v.selectedCustomer.Address__c}"></lightning:input>
+                        </lightning:layoutItem>
+                        <!--
+                        <lightning:layoutItem class="slds-p-around_small" size="3">
+                            <lightning:input readonly="true" aura:id="FirstName" label="First Name" name="First Name" type="text"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="3">
+                            <lightning:input readonly="true" aura:id="LastName" label="Last Name" name="Last Name" type="text"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6"/>
+
+                        <lightning:layoutItem class="slds-p-around_small" size="3">
+                            <lightning:input readonly="true" aura:id="CustomerHomePhone" label="Customer Home Phone" name="Customer Home Phone"
+                                             type="text"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="3">
+                            <lightning:input readonly="true" aura:id="CustomerMobilePhone" label="Customer Mobile Phone" name="Customer Mobile Phone"
+                                             type="text"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:input readonly="true" aura:id="CustomerEmailAddress" label="Customer Email Address" name="Customer Email Address"
+                                             type="text"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <lightning:input readonly="true" aura:id="CustomerAddress" label="Customer Address(Street, City, State Zip)" name="Customer Address"
+                                             type="text"></lightning:input>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <lightning:textarea label="Admin Comments" name="Admin Comments"></lightning:textarea>
+                        </lightning:layoutItem>
+                        -->
+                    </lightning:layout>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="12">
+                    <hr/>
+                </lightning:layoutItem>
+                <!--       Product Information         -->
+                <lightning:layoutItem class="slds-p-around_small" size="12">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-title" id="product-information-title">
+                                <span>
+                                    Product Information
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-subtitle" id="product-information-subtitle">
+                                <span>
+                                    Enter the Tractor and Attachments serial numbers to be registered.
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <c:DN_Lookup aura:id="lookupAssetSN"
+                                         uniqueLookupIdentifier="{!'Asset-' + idx}"
+                                         objectName="Asset"
+                                         fieldSet="['Name','fm_ProductCode__c','fm_ProductName__c', 'SerialNumber']"
+                                         whereCondition="{!' SerialNumber != null AND (Status = \'New\' OR Status = \'In Stock\')'}"
+                                         limit="10000"
+                                         viewObjectName="Asset"
+                                         viewObjectId="{!v.recordId}"
+                                         comparisonField="['Name','fm_ProductCode__c','fm_ProductName__c','SerialNumber']"
+                                         primaryDisplayField="Name"
+                                         alternateDisplayField="['Name','fm_ProductCode__c','fm_ProductName__c','SerialNumber']"   
+                                         minimumCharacter="2"
+                                         lightningIconName="standard:asset_object"
+                                         selectedObject="{!v.searchedAssetRecord}"
+                                         compact="false"
+                                         lookupSelected="{!c.handleSearchAssetSelectedEvt}"
+                                         selectedLookupRemoved = "{!c.handleSearchAssetLookupRemoved}"
+                            />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6">
+                            <lightning:layout multipleRows="true">
+                                <!--<lightning:layoutItem class="" size="6">
+                                    &lt;!&ndash;                                    <lightning:input label="{!$Label.c.Tractor_SN}" name="Tractor SN" type="text"></lightning:input>&ndash;&gt;
+                                    <div class="slds-p-around_small input-label">
+                                        <label class="slds-form-element__label slds-no-flex"
+                                               for="lookupTractorSN">{!$Label.c.Tractor_SN}</label>
+                                        <div id="lookupTractorSN">
+                                            <c:DN_Lookup aura:id="lookupTractorSN"
+                                                         uniqueLookupIdentifier="{!'Asset-' + idx}"
+                                                         objectName="Asset"
+                                                         fieldSet="['SerialNumber','ProductCode']"
+                                                         whereCondition="{!' SerialNumber != null AND (Status = \'New\' OR Status = \'In Stock\')'}"
+                                                         limit="10000"
+                                                         viewObjectName="Asset"
+                                                         viewObjectId="{!v.recordId}"
+                                                         comparisonField="['SerialNumber','ProductCode']"
+                                                         primaryDisplayField="SerialNumber"
+                                                         alternateDisplayField="['ProductCode']"
+                                                         minimumCharacter="2"
+                                                         lightningIconName="standard:asset_object"
+                                                         selectedId="{!v.selectedTractorRecordId}"
+                                                         selectedLabel="{!v.selectedTractorLabel}"
+                                                         selectedObject="{!v.selectedTractorRecord}"
+                                                         compact="false"
+                                                         lookupSelected="{!c.handleTractorSelectedEvt}"
+                                            />
+                                        </div>
+                                    </div>
+                                </lightning:layoutItem>-->
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Tractor_SN}"
+                                                     name="Tractor SN" value="{!v.selectedTractorRecord.SerialNumber}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Tractor_Model}"
+                                                     name="Tractor Model" value="{!v.selectedTractorRecord.ProductCode}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <!--<lightning:layoutItem  size="6">
+                                    <div class="slds-p-around_small input-label">
+                                        <label class="slds-form-element__label slds-no-flex"
+                                               for="lookupTractorSN">{!$Label.c.Loader_SN}</label>
+                                        <div id="lookupTractorSN">
+                                            <c:DN_Lookup aura:id="lookupTractorSN"
+                                                         uniqueLookupIdentifier="{!'Asset-' + idx}"
+                                                         objectName="Asset"
+                                                         fieldSet="['SerialNumber','ProductCode']"
+                                                         whereCondition="{!' SerialNumber != null AND (Status = \'New\' OR Status = \'In Stock\')'}"
+                                                         limit="10000"
+                                                         viewObjectName="Order"
+                                                         viewObjectId="{!v.recordId}"
+                                                         comparisonField="['SerialNumber','ProductCode']"
+                                                         primaryDisplayField="SerialNumber"
+                                                         alternateDisplayField="['ProductCode']"
+                                                         minimumCharacter="2"
+                                                         lightningIconName="standard:asset_object"
+                                                         selectedId="{!v.selectedLoaderRecordId}"
+                                                         selectedLabel="{!v.selectedLoaderLabel}"
+                                                         selectedObject="{!v.selectedLoaderRecord}"
+                                                         compact="false"
+                                                         readOnly=""
+                                            />
+                                        </div>
+                                    </div>
+                                </lightning:layoutItem>-->
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Loader_SN}"
+                                                     name="Loader SN" value="{!v.selectedLoaderRecord.SerialNumber}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Loader_Model}"
+                                                     name="Loader Model" value="{!v.selectedLoaderRecord.ProductCode}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <!--<lightning:layoutItem size="6">
+                                    <div class="slds-p-around_small input-label">
+                                        <label class="slds-form-element__label slds-no-flex"
+                                               for="lookupTractorSN">{!$Label.c.Backhoe_SN}</label>
+                                        <div id="lookupTractorSN">
+                                            <c:DN_Lookup aura:id="lookupBackhoeSN"
+                                                         uniqueLookupIdentifier="{!'Asset-' + idx}"
+                                                         objectName="Asset"
+                                                         fieldSet="['SerialNumber','ProductCode']"
+                                                         whereCondition="{!' SerialNumber != null AND (Status = \'New\' OR Status = \'In Stock\')'}"
+                                                         limit="10000"
+                                                         viewObjectName="Order"
+                                                         viewObjectId="{!v.recordId}"
+                                                         comparisonField="['SerialNumber','ProductCode']"
+                                                         primaryDisplayField="SerialNumber"
+                                                         alternateDisplayField="['ProductCode']"
+                                                         minimumCharacter="2"
+                                                         lightningIconName="standard:asset_object"
+                                                         selectedId="{!v.selectedBackhoeRecordId}"
+                                                         selectedLabel="{!v.selectedBackhoeLabel}"
+                                                         selectedObject="{!v.selectedBackhoeRecord}"
+                                                         compact="false"
+                                                         readOnly=""
+                                            />
+                                        </div>
+                                    </div>
+                                </lightning:layoutItem>-->
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Backhoe_SN}"
+                                                     name="Backhoe SN" value="{!v.selectedBackhoeRecord.SerialNumber}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Backhoe_Model}"
+                                                     name="Backhoe Model" value="{!v.selectedBackhoeRecord.ProductCode}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <!--<lightning:layoutItem size="6">
+                                    <div class="slds-p-around_small input-label">
+                                        <label class="slds-form-element__label slds-no-flex"
+                                               for="lookupTractorSN">{!$Label.c.Mid_Mount_Mower_SN}</label>
+                                        <div id="lookupTractorSN">
+                                            <c:DN_Lookup aura:id="lookupTractorSN"
+                                                         uniqueLookupIdentifier="{!'Asset-' + idx}"
+                                                         objectName="Asset"
+                                                         fieldSet="['SerialNumber','ProductCode']"
+                                                         whereCondition="{!' SerialNumber != null AND (Status = \'New\' OR Status = \'In Stock\')'}"
+                                                         limit="10000"
+                                                         viewObjectName="Order"
+                                                         viewObjectId="{!v.recordId}"
+                                                         comparisonField="['SerialNumber','ProductCode']"
+                                                         primaryDisplayField="SerialNumber"
+                                                         alternateDisplayField="['ProductCode']"
+                                                         minimumCharacter="2"
+                                                         lightningIconName="standard:asset_object"
+                                                         selectedId="{!v.selectedMowerRecordId}"
+                                                         selectedLabel="{!v.selectedMowerLabel}"
+                                                         selectedObject="{!v.selectedMowerRecord}"
+                                                         compact="false"
+                                                         readOnly=""
+                                            />
+                                        </div>
+                                    </div>
+                                </lightning:layoutItem>-->
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Mid_Mount_Mower_SN}"
+                                                     name="Mower Model" value="{!v.selectedMowerRecord.SerialNumber}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Mower_Model}"
+                                                     name="Mower Model" value="{!v.selectedMowerRecord.ProductCode}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <!--<lightning:layoutItem
+                                        size="6">
+                                    <div class="slds-p-around_small input-label">
+                                        <label class="slds-form-element__label slds-no-flex"
+                                               for="lookupTractorSN">{!$Label.c.Cabin_SN}</label>
+                                        <div id="lookupTractorSN">
+                                            <c:DN_Lookup aura:id="lookupTractorSN"
+                                                         uniqueLookupIdentifier="{!'Asset-' + idx}"
+                                                         objectName="Asset"
+                                                         fieldSet="['SerialNumber','ProductCode']"
+                                                         whereCondition="{!' SerialNumber != null AND (Status = \'New\' OR Status = \'In Stock\')'}"
+                                                         limit="10000"
+                                                         viewObjectName="Order"
+                                                         viewObjectId="{!v.recordId}"
+                                                         comparisonField="['SerialNumber','ProductCode']"
+                                                         primaryDisplayField="SerialNumber"
+                                                         alternateDisplayField="['ProductCode']"
+                                                         minimumCharacter="2"
+                                                         lightningIconName="standard:asset_object"
+                                                         selectedId="{!v.selectedCabinRecordId}"
+                                                         selectedLabel="{!v.selectedCabinLabel}"
+                                                         selectedObject="{!v.selectedCabinRecord}"
+                                                         compact="false"
+                                                         readOnly=""
+                                            />
+                                        </div>
+                                    </div>
+                                </lightning:layoutItem>-->
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Cabin_SN}"
+                                                     name="Cabin Model" value="{!v.selectedCabinRecord.SerialNumber}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="slds-p-around_small input-label" size="6">
+                                    <lightning:input readonly="true" label="{!$Label.c.Cabin_Model}"
+                                                     name="Cabin Model" value="{!v.selectedCabinRecord.ProductCode}"
+                                                     type="text"></lightning:input>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="6"/>
+                    </lightning:layout>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="12">
+                    <hr/>
+                </lightning:layoutItem>
+                <!--            Retail Programs         -->
+                <!--  개발 전까지 주석 처리              -->
+                <!--<aura:if isTrue="{!v.isNotStock}">
+                    <lightning:layoutItem class="slds-p-around_small" size="12">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem class="slds-p-around_small" size="12">
+                                <div class="content-title" id="retail-programs-title">
+                                <span>
+                                    Retail Programs
+                                </span>
+                                </div>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-around_small" size="12">
+                                <div class="content-subtitle" id="retail-programs-subtitle">
+                                <span>
+                                    Are you interested in adding a retail program?
+                                </span>
+                                </div>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-around_small" size="12">
+                                <lightning:accordion
+                                        allowMultipleSectionsOpen="true"
+                                        onsectiontoggle="{! c.retailProgramHandleSectionToggle }"
+                                        activeSectionName="{! v.retailProgramActiveSections }"
+                                >
+                                    <lightning:accordionSection class="accordion-header" name="A"
+                                                                label="Apply for Rebate">
+                                        <aura:set attribute="body">
+                                            <p class="slds-p-around_small accordion-description">There are no bonuses
+                                                available in this category</p>
+                                            <lightning:layout multipleRows="true">
+                                                <lightning:layoutItem size="5" class="accordion-content">
+                                                    <div>
+                                                        <p class="amount-calculation-box">Total Requested Amount:</p>
+                                                    </div>
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="7" class="accordion-content">
+                                                    <div>
+                                                        <lightning:radioGroup name="RebateRadioGroup"
+                                                                              class="slds-float_left"
+                                                                              variant="label-hidden"
+                                                                              label="Rebate Radio Group"
+                                                                              options="{! v.rebateOptions }"
+                                                                              value="{! v.applyForRebateValue }"
+                                                                              type="radio"/>
+
+                                                    </div>
+                                                </lightning:layoutItem>
+                                            </lightning:layout>
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                    <lightning:accordionSection class="accordion-header" name="B"
+                                                                label="Apply for Volume Incentive">
+                                        <p class="slds-p-around_small accordion-description">There are no bonuses
+                                            available
+                                            in this category</p>
+                                        <lightning:layout multipleRows="true">
+                                            <lightning:layoutItem size="5" class="accordion-content">
+                                                <div>
+                                                    <p class="amount-calculation-box">Total Requested Amount:</p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="7" class="accordion-content">
+                                                <div>
+                                                    <lightning:radioGroup name="IncentiveRadioGroup"
+                                                                          class="slds-float_left"
+                                                                          variant="label-hidden"
+                                                                          label="Incentive Radio Group"
+                                                                          options="{! v.incentiveOptions }"
+                                                                          value="{! v.applyForIncentiveValue }"
+                                                                          type="radio"
+                                                    />
+                                                </div>
+                                            </lightning:layoutItem>
+                                        </lightning:layout>
+                                    </lightning:accordionSection>
+                                </lightning:accordion>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="12">
+                        <hr/>
+                    </lightning:layoutItem>
+                </aura:if>-->
+
+                <!--            Warranty Information         -->
+                <lightning:layoutItem class="slds-p-around_small" size="12">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-title" id="retail-programs-title">
+                                <span>
+                                    Warranty Information
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-subtitle" id="retail-programs-subtitle">
+                                <span>
+                                    Please select the warranty type
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="4">
+                            <lightning:button aura:id="non-commercial-button" class="warranty-information-button"
+                                              name="Non-Commercial"
+                                              label="Non-Commercial" onclick="{!c.handleOnClickWarrantyButton}"/>
+                            <lightning:helptext class="warranty-helptext"
+                                                content="Non-Commercial: Tractor not intended for use in generating income, or for rental, loan, or lease purposes."/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="4">
+                            <lightning:button aura:id="commercial-button" class="warranty-information-button"
+                                              name="Commercial"
+                                              label="Commercial" onclick="{!c.handleOnClickWarrantyButton}"/>
+                            <lightning:helptext class="warranty-helptext"
+                                                content="Commercial: Tractor intended for use in generating income; for rental, loan, or lease; or for nonagricultural commercial purposes."/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="4">
+                            <lightning:button aura:id="stock-button" class="warranty-information-button" name="Stock"
+                                              label="Stock" onclick="{!c.handleOnClickWarrantyButton}"/>
+                            <lightning:helptext class="warranty-helptext"
+                                                content="Stock: Tractor still in dealer inventory. Stock registration does not start manufacturer warranty period."/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-title" id="retail-programs-small-title">
+                                <span>
+                                    Warranty Details
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <lightning:accordion
+                                    allowMultipleSectionsOpen="true"
+                                    onsectiontoggle="{! c.warrantyDetailsHandleSectionToggle }"
+                                    activeSectionName="{! v.warrantyDetailsActiveSections }"
+                            >
+                                <lightning:accordionSection class="accordion-header" name="A"
+                                                            label="Bumper-to-Bumper Warranty">
+                                    <aura:set attribute="body">
+                                        <lightning:layout multipleRows="true">
+                                            <!--   Title Start  -->
+                                            <lightning:layoutItem size="6" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="font-weight:bold;">
+                                                        Product</p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="font-weight:bold;">Warranty
+                                                        Period</p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="font-weight:bold;">
+                                                        Coverage</p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <!--   Title End   -->
+                                            <lightning:layoutItem size="6" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">All Tier 4
+                                                        Tractors
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">24 Months or
+                                                        2,000 Hours
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Parts / Labor
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="6" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Attachments
+                                                        (Front-End Loaders/Backhoes/Mid-Mount Mowers)
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">12 Months
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Parts / Labor
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="6" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Replacement
+                                                        Parts
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">3 Months or
+                                                        Remainder of Unit Warranty (Longer)
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Parts Only
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="6" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Replacement
+                                                        Engines
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">12 Months</p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Parts Only
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="6" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">All Tier 4
+                                                        Tractors (Rental and Commercial Use)
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">24 Months or
+                                                        2,000 Hours
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="color:gray;">Parts /
+                                                        Labor</p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="12" class="warranty-accordion-content">
+                                                <div>
+                                                    <p class="slds-p-around_x-small" style="font-weight:bold;">
+                                                        *Batteries and Tires are warranted by Manufacturer
+                                                    </p>
+                                                </div>
+                                            </lightning:layoutItem>
+                                        </lightning:layout>
+                                    </aura:set>
+                                </lightning:accordionSection>
+                                <lightning:accordionSection class="accordion-header" name="B"
+                                                            label="Powertrain Warranty">
+                                    <lightning:layout multipleRows="true">
+                                        <!--   Title Start    -->
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="font-weight:bold;">Product Type
+                                                    and Usage</p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="font-weight:bold;">Applicable
+                                                    Models</p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="font-weight:bold;">Warranty
+                                                    Period</p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="font-weight:bold;">Coverage</p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <!--   Title End    -->
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Tier IV
+                                                    Non-Commercial Use
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Between 20 and 70
+                                                    engine horsepower
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">72 months or 3,000
+                                                    hrs
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Parts / Labor
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;"></p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Less than 20 or
+                                                    more than 70 engine horsepower</p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">60 months or 2,000
+                                                    hrs
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Parts / Labor
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Tier IV Rental
+                                                    &amp; Commercial Use</p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="4" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">All models
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="3" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">36 months or 2,000
+                                                    hrs
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="2" class="warranty-accordion-content">
+                                            <div>
+                                                <p class="slds-p-around_x-small" style="color:gray;">Parts / Labor
+                                                </p>
+                                            </div>
+                                        </lightning:layoutItem>
+                                    </lightning:layout>
+                                </lightning:accordionSection>
+                            </lightning:accordion>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="12">
+                    <hr/>
+                </lightning:layoutItem>
+                <lightning:layoutItem class="slds-p-around_small" size="12" aura:id="checkboxGroup">
+                    <lightning:input
+                            label="I have explained the applicable warranty terms to the retail customer."
+                            type="checkbox" required="true" value="{!v.isExplainedWarrantyTerm}"
+                            onchange="{!c.handleOnChangeInputCheckbox}"/>
+                    <lightning:input
+                            label="I have discussed exclusions to warranty coverage with the retail customer, including transportation."
+                            type="checkbox" required="true" value="{!v.isExplainedWarrantyCoverage}"
+                            onchange="{!c.handleOnChangeInputCheckbox}"/>
+                    <lightning:input
+                            label="I have reviewed proper operation and maintenance procedures with the retail customer."
+                            type="checkbox" required="true" value="{!v.isReviewedOperationAndProcedure}"
+                            onchange="{!c.handleOnChangeInputCheckbox}"/>
+                    <lightning:input
+                            label="I will keep a signed copy of the registration on file."
+                            type="checkbox" required="true" value="{!v.isKeptSignedCopyOfRegistration}"
+                            onchange="{!c.handleOnChangeInputCheckbox}"/>
+                </lightning:layoutItem>
+                <lightning:layoutItem class="slds-p-around_small" size="12">
+                    <div id="header-button-container" class="slds-float_left">
+                        <lightning:button name="{!$Label.c.Save}" label="{!$Label.c.Save}"
+                                          onclick="{!c.handleOnClickSaveButton}"
+                                          variant="brand"></lightning:button>
+                        <lightning:button name="{!$Label.c.Discard}" label="{!$Label.c.Discard}" onclick="{!c.handleOnclickDiscardButton}"></lightning:button>
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+    </div>
+    <aura:if isTrue="{!v.isSearchResult}">
+        <c:EndCustomerSearchResult keyword="{!v.keyword}"/>
+    </aura:if>
+    <aura:if isTrue="{!v.isCreateCustomerModalOpen}">
+        <c:CreateNewCustomer/>
+    </aura:if>
+</aura:component>

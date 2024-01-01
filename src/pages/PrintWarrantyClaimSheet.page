@@ -1,0 +1,632 @@
+<!--
+ - Created by 천유정 on 2023-09-11.
+ -->
+
+<apex:page id="PrintWarrantyClaimSheet"
+           controller="PrintWarrantyClaimSheetController"
+           standardStylesheets="false"
+           applyBodyTag="false"
+           applyHtmlTag="false"
+           sidebar="false"
+           showHeader="false"
+           contentType="text/html;charset=UTF-8"
+           renderAs="pdf">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+        <style>
+
+            table, th, td {
+                font-family: Arial Unicode MS, sans-serif;
+                font-weight: normal;
+                font-size: 12px;
+            }
+
+            .logoClaimSheet {
+                width: 100%;
+                border-bottom: 1px solid black;
+            }
+
+            .tymLogo {
+                width: 30%;
+            }
+            .claimSheet {
+                width: 70%;
+            }
+
+            .title {
+                padding: 15px;
+                text-align: left;
+                font-weight: bold;
+                font-size: 20px;
+            }
+
+            .subtitle {
+                text-align: left;
+                padding: 5px;
+            }
+
+            /* div 공통 처리 */
+
+            .divCommon {
+                padding: 3px;
+            }
+
+            .label {
+                display: inline-block;
+                width: 200px;
+            }
+
+            .labelTitle {
+                display: inline-block;
+                width: 100px;
+            }
+
+            .value {
+                display: inline-block;
+            }
+
+
+
+            /* 첫번째 table 끝 */
+
+            .claimDetail {
+                width: 100%;
+                height: 100%;
+                border-bottom: 1px solid black;
+            }
+            
+            .claimDivision {
+                width: 35%;
+                height: 100%;
+            }
+
+            .claimResult {
+                width: 20%;
+                height: 100%;
+            }
+
+            /* 두번째 table 끝 */
+
+            .dealerCustomInfo {
+                width: 100%;
+                height: 100%;
+                border-bottom: 1px solid black;
+                align-items: center;
+            }
+
+            .dealerCustomTitle {
+                /* width: 35%; */
+                height: 50px;
+                align-items: center;
+            }
+
+            /* .dealerCustomDetail {
+                width: 65%;
+                height: 50px;
+                align-items: center;
+                display: flex;
+            } */
+            
+
+            /* 3번 table 끝 */
+
+            .tractorInfo {
+                width: 100%;
+                height: 100%;
+                border-bottom: 1px solid black;
+            }
+
+            .tractorDetail, .tractorLoaderDate, .tractorBackHoe {
+                height: 100%;
+            }
+
+            /* 4번 table 끝 */
+
+            .classCodeTable {
+                border: 1px solid black;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                word-break: break-all;
+                page-break-inside: avoid;
+                /* page-break-after: avoid; */
+            }
+            
+            .classTitle th, td {
+                border: 1px solid black;
+            }
+
+            .classTitle th {
+                font-weight: bold;
+            }
+
+            /* 5번 table 끝 */
+
+            .partTable {
+                border: 1px solid black;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                word-break: break-all;
+                /* page-break-inside: avoid; */
+                /* page-break-after: avoid; */
+            }
+            
+            .partTable th, td {
+                border: 1px solid black;
+            }
+
+            .partTable th {
+                font-weight: bold;
+            }
+
+            /* 6번 table 끝 */
+
+            .srtTable {
+                border: 1px solid black;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                word-break: break-all;
+                page-break-inside: avoid;
+                /* page-break-after: avoid; */
+            }
+
+            .srtTable th, td {
+                border: 1px solid black;
+            }
+
+            .srtTitle th {
+                font-weight: bold;
+            }
+
+            .resultTable {
+                border: 1px solid black;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                word-break: break-all;
+                page-break-inside: avoid;
+            }
+
+            .resultTable th, td {
+                border: 1px solid black;
+            }
+
+            .resultTableTitle th {
+                font-weight: bold;
+            }
+
+            .approverTable {
+                border: 1px solid black;
+                border-collapse: collapse;
+                float: right;
+                margin-top: 30px;
+                /* font-size: 15px; */
+                height: auto;
+                word-break: break-all;
+                page-break-inside: avoid;
+            }
+
+            .approverTable th, td {
+                border: 1px solid black;
+            }
+
+            @page {
+            size: a4 portrait;
+            }
+            
+            img {
+                width: 70%;
+                height: 100%;
+            }
+
+        </style>
+    </head>
+    <body>
+        <table class="logoClaimSheet">
+            <th class="tymLogo">
+                <apex:image value="{!$Resource.tymPDFImage}" alt="Description of image here"/>
+            </th>
+            <th class="claimSheet">
+                <div class="title">WARRANTY CLAIM SHEET</div>
+                <div class="subtitle">REQUEST FOR CREDIT - FOR WARRANT CLAIM ONLY</div>
+            </th>
+        </table>
+
+        <!-- 1번째 테이블 끝 -->
+
+        <table class="claimDetail">
+            <tr>
+                <th class="claimDivision">
+                    <div class="divCommon"> SERVICE DIVISION OF <br/> TYM TRACTOR</div>
+                    <br/>
+                </th>
+
+                <th>
+                    <apex:variable value="{!claimInfo}" var="case">
+                        <div class="divCommon">
+                            <span class="label">WARRANTY CLAIM NUMBER</span>
+                            <span class="value"></span>
+                        </div>
+                        <div class="divCommon">
+                            <span class="label">CLAIM SHEET NUMBER</span>
+                            <span class="value">{!case.CaseNumber}</span>
+                        </div>
+                        <div class="divCommon">
+                            <span class="label">CLAIM DATE</span>
+                            <span class="value">{!str}</span>
+                        </div>
+                    </apex:variable>
+                </th>
+
+                <!-- 나중에 작업할 곳 -->
+                <apex:variable value="{!claimInfo}" var="case">
+                    <th class="claimResult">
+                        <div class="divCommon"></div>
+                        <div class="divCommon"></div>
+                        <div class="divCommon">
+                            <!-- <span class="value">{!case.Status}</span> -->
+                            <apex:outputText value="{!IF(case.Status == 'Closed', 'Approval', case.Status)}" />
+                        </div>
+                    </th>
+                </apex:variable>
+            </tr>
+        </table>
+
+        <!-- 2번째 테이블 끝 -->
+
+        <table class="dealerCustomInfo">
+            <tr>
+                <th class="dealerCustomTitle">
+                    <apex:repeat value="{!claimInfo}" var="case">
+                        <div class="divCommon">
+                            <span class="label">DEALER NAME</span>
+                            <span class="value">{!case.Account.Name}</span>
+                        </div>
+                        <div class="divCommon">
+                            <span class="label">DEALER ADDRESS</span>
+                            <span class="value">{!BillingAddress}</span>
+                        </div>
+                        <div class="divCommon">
+                            <span class="label">CUSTOMER NAME</span>
+                            <span class="value">{!case.Contact.Name}</span>
+                        </div>
+                        <div class="divCommon">
+                            <span class="label">CUSTOMER ADDRESS</span>
+                            <span class="value">{!case.Contact.Address__c}</span>
+                        </div>
+                    </apex:repeat>
+                </th>               
+            </tr>
+        </table>
+
+        <!-- 3번째 테이블 끝 -->
+
+        <table class="tractorInfo" style="width: 100%;">
+            <tr>
+                <th class="tractorDetail" style="width: 35%" >
+                    <apex:variable value="{!claimInfo}" var="claim">
+                        <div class="divCommon">
+                            <span class="labelTitle">Sales Order</span>
+                            <span class="value">{!claim.Asset.OrdersId__r.PONumber__c}</span> 
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Tractor Model</span>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Tractor'}">
+                                <span class="value">{!claim.Asset.ProductCode}</span>
+                            </apex:outputPanel>
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Tractor S/N</span>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Tractor'}">
+                                <span class="value">{!claim.Asset.SerialNumber}</span>
+                            </apex:outputPanel>
+                            <!-- <span class="value">{!claim.Asset.SerialNumber}</span> -->
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Engine S/N</span>
+                            <span class="value">{!claim.Asset.EngineSerialNumber__c}</span>
+                        </div>
+                    </apex:variable>
+                </th>
+
+                <!-- 나중에 작업할 곳 -->
+                <!-- <th class="tractorDetail">
+                    <apex:variable value="{!claimInfo}" var="claim">
+                        <div class="divCommon">{!claim.Asset.OrdersId__r.Name}</div>
+                        <div class="divCommon">{!claim.Asset.Name}</div>
+                        <div class="divCommon">{!claim.Asset.SerialNumber}</div>
+                        <div class="divCommon"></div>
+                    </apex:variable>
+                </th> -->
+
+                <th class="tractorLoaderDate" style="width: 35%">
+                    <apex:variable value="{!claimInfo}" var="case">
+                        <div class="divCommon">
+                            <span class="labelTitle">Date of Repair</span>
+                            <span class="value">{!repair}</span>
+                        </div>
+                    </apex:variable>
+                    <apex:variable value="{!claimInfo}" var="claim">
+                        <!-- <div class="divCommon">
+                            <span class="labelTitle">Loader Model</span>
+                            <span class="value">{!claim.Asset.LoaderId__r.Name}</span>
+                        </div> -->
+                        <div class="divCommon">
+                            <span class="labelTitle">Loader Model</span>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Tractor'}">
+                                <span class="value">{!claim.Asset.LoaderId__r.Name}</span>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Loader'}">
+                                <span class="value">{!claim.Asset.ProductCode}</span>
+                            </apex:outputPanel>
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Loader S/N</span>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Tractor'}">
+                                <span class="value">{!claim.Asset.LoaderId__r.SerialNumber}</span>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Loader'}">
+                                <span class="value">{!claim.Asset.SerialNumber}</span>
+                            </apex:outputPanel>
+                            <!-- <span class="value">{!claim.Asset.LoaderId__r.SerialNumber }</span> -->
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Retail Date</span>
+                            <span class="value">{!retailDate}</span>
+                        </div>
+                        
+                    </apex:variable>
+                </th>
+                
+                <th class="tractorBackHoe" style="width: 30%">
+                    <apex:variable value="{!claimInfo}" var="claim">
+                        <div class="divCommon">
+                            <span class="labelTitle">Operation HRS</span>
+                            <span class="value">{!claim.UsageTime__c}</span>
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Backhoe Model</span>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Tractor'}">
+                                <span class="value">{!claim.Asset.BackhoeId__r.Name}</span>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Backhoe'}">
+                                <span class="value">{!claim.Asset.ProductCode}</span>
+                            </apex:outputPanel>
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Backhoe S/N</span>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Tractor'}">
+                                <span class="value">{!claim.Asset.BackhoeId__r.SerialNumber}</span>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!claim.Asset.RecordType.DeveloperName == 'Backhoe'}">
+                                <span class="value">{!claim.Asset.SerialNumber}</span>
+                            </apex:outputPanel>
+                            <!-- <span class="value">{!claim.Asset.BackhoeId__r.SerialNumber }</span> -->
+                        </div>
+                        <div class="divCommon">
+                            <span class="labelTitle">Expiration Date</span>
+                            <apex:outputText value="{0,date,yyyy-MM-dd}">
+                                <apex:param value="{!claimInfo.Asset.fm_Warranty_Expiration_Date__c}" />
+                            </apex:outputText>
+                            <!-- <span class="value">{!expirationDate}</span> -->
+                        </div>
+                    </apex:variable>
+                </th>
+
+        </tr>
+
+        </table>
+
+        <!-- 4번째 테이블 끝 -->
+
+        <div style="padding-top: 10px; padding-bottom: 10px;">COMMTENTS</div>
+
+
+        <table class="classCodeTable" style="width: 100%;">
+			<thead class="classTitle">
+                <th style="width: 10%; text-align: center;">Cause Code</th>
+                <th style="width: 10%; text-align: center;">Cause Code2</th>
+                <th style="width: 10%; text-align: center;">Causal Part</th>
+                <th style="width: 10%; text-align: center;">CausalPart Description</th>
+                <th style="width: 20%; text-align: center;">Failure Description</th>
+                <th style="width: 20%; text-align: center;">Cause</th>
+                <th style="width: 20%; text-align: center;">Repair</th>
+			</thead>
+			<tbody>
+                <!-- <apex:repeat value="{!caseList}" var="case">
+                    <tr>
+                        <td>{!case.CauseCode__c}</td>
+                        <td>{!case.CauseCode2__c}</td>
+                        <td>
+                            {!case.CauseCode2__c}
+                        </td>
+                        <td>
+                            {!case.CauseCode2__c}
+                        </td>
+                        <td>{!case.DescriptionOfFailure__c}</td>
+                        <td>{!case.Failure_Cause__c}</td>
+                        <td>{!case.Repair__c}</td>
+                    </tr>
+                    <apex:variable value="{!partInfo}" var="parts">
+                        <apex:repeat value="{!parts.PartsClaim__r}" var="part">
+                            <tr>
+                                <td>
+                                    <apex:outputText value="{!IF(part.LP__c, part.LocalParts__c, part.fm_PartsNo__c)}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!IF(part.LP__c, part.LocalParts__c, part.fm_PartsName__c)}" />
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </apex:variable>
+                </apex:repeat> -->
+
+                <apex:repeat value="{!caseList}" var="case">
+                    <tr>
+                        <td>{!case.CauseCode__c}</td>
+                        <td>{!case.CauseCode2__c}</td>
+                        <td>{!partsNo}</td>
+                        <td>{!partsDes}</td>
+                        <td>{!case.DescriptionOfFailure__c}</td>
+                        <td>{!case.Failure_Cause__c}</td>
+                        <td>{!case.Repair__c}</td>
+                    </tr>
+                </apex:repeat>
+
+			</tbody>
+		</table>
+
+        <!-- 5번째 테이블 끝 -->
+
+        <table class="partTable" style="width: 100%;">
+			<thead class="partTitle">
+                <tr>
+                    <th style="width: 25%; text-align: center;" rowspan="2">Part No</th>
+                    <th style="width: 25%; text-align: center;" rowspan="2">Part Description</th>
+                    <!-- <th style="width: 20%; text-align: center;" rowspan="2">Price</th> -->
+                    <th style="width: 15%; text-align: center;" colspan="2">Request</th>
+                    <th style="width: 15%; text-align: center;" colspan="2">Approved</th>
+                    <!-- <th style="font-weight: 100; text-align: center;">QTY</th> -->
+                    <!-- <th style="font-weight: 100; text-align: center;">Amount</th> -->
+                    <!-- <th style="font-weight: 100; text-align: center;">QTY</th> -->
+                    <!-- <th style="font-weight: 100; text-align: center;">Amount</th> -->
+                </tr>
+                <tr>
+                    <th style="text-align: center;">QTY</th>
+                    <th style="text-align: center;">Amount</th>
+                    <th style="text-align: center;">QTY</th>
+                    <th style="text-align: center;">Amount</th>
+                </tr>
+
+                <!-- 나중에 해야될 곳 -->
+			</thead>
+			<tbody>
+                <apex:variable value="{!partInfo}" var="parts">
+                    <tr>
+                        <apex:outputText rendered="{!parts.PartsClaim__r.size == 0}">
+                            <td colspan="6" style="text-align: center">There is nothing to display.</td>
+                        </apex:outputText>
+                    </tr>
+                    <apex:repeat value="{!parts.PartsClaim__r}" var="part">
+                        <tr>
+                            <td>
+                                <apex:outputText value="{!IF(part.LP__c, part.LocalParts__c, part.fm_PartsNo__c)}" />
+                            </td>
+                            <td>
+                                <apex:outputText value="{!IF(part.LP__c, part.LocalParts__c, part.fm_PartsName__c)}" />
+                            </td>
+                            <td>{!part.Quantity__c}</td>
+                            <td>{!part.fm_Amount__c}</td>
+                            <td>{!part.ApprovedQuantity__c}</td>
+                            <td>{!part.ApprovedPartValue__c}</td>
+                        </tr>
+                    </apex:repeat>
+                </apex:variable>
+
+			</tbody>
+		</table>
+
+        <!-- 6번째 테이블 끝 -->
+
+        <table class="srtTable" style="width: 100%;">
+			<thead class="srtTitle">
+                <tr>
+                    <th style="width: 20%; text-align: center;" rowspan="2">Labor Code</th>
+                    <th style="width: 10%; text-align: center;" rowspan="2">Labor<br/>Group</th>
+                    <th style="width: 20%; text-align: center;" rowspan="2">Diagram</th>
+                    <th style="width: 25%; text-align: center;" rowspan="2">Description</th>
+                    <th style="width: 10%; text-align: center;" colspan="2">Labor Hour</th>
+                    <th style="width: 15%; text-align: center;" rowspan="2">Remarks</th>
+                </tr>
+                <tr>
+                    <th>Request</th>
+                    <th>Approval</th>
+                </tr>
+
+                <!-- 나중에 해야될 곳 -->
+			</thead>
+			<tbody>
+                <apex:variable value="{!laborCodeInfo}" var="labor">
+                    <apex:outputText rendered="{!labor.LaborCodeClaim__r.size == 0}">
+                        <td colspan="8" style="text-align: center">There is nothing to display.</td>
+                    </apex:outputText>
+                    <apex:repeat value="{!labor.LaborCodeClaim__r}" var="la">
+                        <tr>
+                            <td style="text-align:left;">{!la.fm_LaborCode__c}</td>
+                            <td style="text-align:left;">{!la.fm_LaborGroup__c}</td>
+                            <td style="text-align:left;">{!la.fm_Diagram__c}</td>
+                            <td style="text-align: left;">{!la.fm_Description__c}</td>
+                            <td style="text-align: left;">{!la.LaborHour__c}</td>
+                            <td style="text-align: left;">{!la.ApprovedLaborHour__c}</td>
+                            <td style="text-align: left;">{!la.Remarks__c}</td>
+                        </tr>
+                     </apex:repeat>
+                </apex:variable>
+			</tbody>
+		</table>
+
+        <!-- 7번째 테이블 끝 -->
+
+        <table class="resultTable" style="width: 100%;">
+			<thead class="resultTableTitle">
+                    <th style="width: 12%;"></th>
+                    <th style="width: 13%; text-align: center;">Repair Hr</th>
+                    <th style="width: 15%; text-align: center;">Labor</th>
+                    <th style="width: 15%; text-align: center;">Parts</th>
+                    <th style="width: 15%; text-align: center;">Shipping</th>
+                    <th style="width: 15%; text-align: center;">Others</th>
+                    <th style="width: 15%; text-align: center;">Total</th>
+                </thead>
+                <tbody>
+                    <tr style="width: 100%">
+                        <td style="text-align: center; font-weight: bold;">Request</td>
+                        <apex:repeat value="{!caseList}" var="case">
+                            <td style="text-align: right;">{!case.ru_TotalRequestLaborHour__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalRequestLaborCost__c}</td>
+                            <td style="text-align: right;">{!case.ru_PartsTotal__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalRequestShippnig__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalRequestOthers__c}</td>
+                            <td style="text-align: right;">{!case.fm_TotalRequestAmount__c}</td>
+                        </apex:repeat>
+                    </tr>
+                    
+                    <tr>
+                        <td style="text-align: center; font-weight: bold;">Approval</td>
+                        <apex:repeat value="{!caseList}" var="case">
+                            <td style="text-align: right;">{!case.ru_TotalApprovedLaborHour__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalApprovedLaborCost__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalApprovedPartsAmount__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalApprovedShipping__c}</td>
+                            <td style="text-align: right;">{!case.ru_TotalApprovedOthers__c}</td>
+                            <td style="text-align: right;">{!case.fm_TotalApprovedAmount__c}</td>
+                        </apex:repeat>
+                    </tr>
+                </tbody>
+		</table>
+
+        <table class="approverTable" style="width:60%; text-align: center;">
+            <thead>
+                <tr>
+                    <th style="text-align: center; font-weight: bold;" colspan="2">ARRROVER'S AUTHOTIZED SIGNATURE &amp; DATE</th>
+                </tr>
+                <tr style="width: 100%">
+                    <th style="height:80px; width:50%">
+                        <!-- <apex:outputPanel rendered="{!NOT(ISBLANK(!imageUrl))}"> -->
+                        <!-- </apex:outputPanel> -->
+                        <apex:image rendered="{!NOT(ISBLANK(imageUrl))}" url="{!imageUrl}"/>
+                        <!-- <apex:image url="{!imageUrl}"/> -->
+                    </th>
+                    <th style="height:80px; width:50%">
+                        {!approvedDate}
+                    </th>
+                </tr>
+
+            </thead>
+        </table>
+
+
+
+
+    </body>
+
+
+</apex:page>

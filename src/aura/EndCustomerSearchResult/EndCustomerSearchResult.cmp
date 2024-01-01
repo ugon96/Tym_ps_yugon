@@ -1,0 +1,55 @@
+<!--
+ - Created by yghwang on 2023-10-05.
+ -->
+
+<aura:component description="EndCustomerSearchResult" controller="EndCustomerSearchResultController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+    <!-- attributes -->
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="keyword" type="String" default=""/>
+    <aura:attribute name="selectedCustomers" type="List"/>
+    <aura:attribute name="isShowSpinner"	type="Boolean" default="false"/>
+    <aura:attribute name="selectedCustomer"	type="Contact" />
+
+    <aura:handler name="init" value="{! this }" action="{! c.fnInit }"/>
+
+    <aura:registerEvent name="closeSearchResultEvt" type="c:handleCloseBtnClicked_evt"/>
+    <aura:registerEvent name="selectCustomerEvt" type="c:handleBtnClicked_evt"/>
+
+    <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading-01"
+             class="slds-modal slds-fade-in-open">
+        <aura:if isTrue="{!v.isShowSpinner}">
+            <lightning:spinner variant="brand" size="medium" />
+        </aura:if>
+        <div class="slds-modal__container">
+            <div class="slds-modal__header">
+                <lightning:buttonIcon iconName="utility:close"
+                                      onclick="{! c.closeModal }"
+                                      alternativeText="close"
+                                      variant="bare-inverse"
+                                      class="slds-modal__close"/>
+                <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate"></h1>
+            </div>
+
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <lightning:datatable
+                    keyField="Id"
+                    data="{!v.data}"
+                    columns="{!v.columns}"
+                    maxRowSelection="1"
+                    selectedRows="{!v.selectedCustomers}"
+                    onrowselection="{!c.handleRowSelection}"
+                />
+
+            </div>
+            <div class="slds-modal__footer">
+                <lightning:button class="slds-button slds-button_neutral" onclick="{!c.closeModal}">{!$Label.c.Cancel}
+                </lightning:button>
+                <lightning:button class="slds-button slds-button_brand" onclick="{!c.handleConfirmBtnClicked}">{!$Label.c.Confirm}
+                </lightning:button>
+            </div>
+        </div>
+    </section>
+
+    <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+</aura:component>

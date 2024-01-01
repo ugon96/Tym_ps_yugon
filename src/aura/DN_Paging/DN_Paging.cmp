@@ -1,0 +1,26 @@
+<!--
+ - Created by 천유정 on 2022-08-17.
+ -->
+
+<aura:component description="DN_Paging">
+    <aura:attribute name="currentPageNumber" type="Integer" required="true" default="1" />
+    <aura:attribute name="maxPageNumber" type="Integer" required="true" default="1" />
+
+    <div class="slds-button-group" role="group">
+        <button onclick="{!c.firstPage}" class="slds-button slds-button--neutral">
+            &lt;&lt;
+        </button>
+        <button onclick="{!c.prevPage}" class="slds-button slds-button--neutral">
+            &lt;
+        </button>
+        <button class="slds-button slds-button--neutral">
+            {!v.currentPageNumber} / {!v.maxPageNumber}
+        </button>
+        <button onclick="{!c.nextPage}" class="slds-button slds-button--neutral">
+            &gt;
+        </button>
+        <button onclick="{!c.lastPage}" class="slds-button slds-button--neutral">
+            &gt;&gt;
+        </button>
+    </div> 
+</aura:component>

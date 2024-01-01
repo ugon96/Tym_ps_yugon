@@ -1,0 +1,94 @@
+<!--
+ * @author : th.kim
+ * @date : 2023-12-07
+ * @group : 
+ * @group-content : 
+ * @description : 
+==============================================================
+ * Ver          Date            Author          Modification
+   1.0          2023-12-07      th.kim         Initial Version
+-->
+<!-- Tym News -->
+<template>
+    <div class="slds-grid slds-wrap slds-size_1-of-1 wrap">
+        <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-bottom_medium slds-align_absolute-center title-box">
+            <strong>Filter by topic:</strong>
+            <div class="slds-grid btn-grp">
+                <strong class="slds-wrap slds-align_absolute-center">
+                    <button class="slds-p-vertical_x-small slds-p-horizontal_medium slds-m-left_x-small active" data-type="All" onclick={onTopicClick}>All</button>
+                    <button class="slds-p-vertical_x-small slds-p-horizontal_medium slds-m-left_x-small" data-type="Announcement" onclick={onTopicClick}>Announcement</button>
+                    <button class="slds-p-vertical_x-small slds-p-horizontal_medium slds-m-left_x-small" data-type="Award" onclick={onTopicClick}>Award</button>
+                    <button class="slds-p-vertical_x-small slds-p-horizontal_medium slds-m-left_x-small" data-type="CSR" onclick={onTopicClick}>CSR</button>
+                    <button class="slds-p-vertical_x-small slds-p-horizontal_medium slds-m-left_x-small" data-type="Press" onclick={onTopicClick}>Press</button>
+                </strong>
+            </div>
+            <div class="slds-grid slds-p-horizontal_x-large category">
+                <strong class="slds-p-right_small slds-align_absolute-center">Select category:</strong>
+                <lightning-combobox
+                    name="categoty"
+                    variant="label-hidden"
+                    value={categoryValue}
+                    placeholder="Select category"
+                    options={categoryOptions}
+                    onchange={onCategoryChange}>
+                </lightning-combobox>
+            </div>
+            <div class="slds-grid sort">
+                <strong class="slds-p-right_small slds-align_absolute-center">Sort:</strong>
+                <lightning-combobox
+                    name="sort"
+                    variant="label-hidden"
+                    value={sortValue}
+                    placeholder="Sort"
+                    options={sortOptions}
+                    onchange={onSortChange}>
+                </lightning-combobox>
+            </div>
+        </div>
+        <div class="slds-grid slds-wrap body-box">
+            <template for:each={listReturn} for:item="item" for:index="idx">
+                <div key={item.objNews.Id} class="slds-p-around_small contents-box">
+                    <div class="slds-size_1-of-1 contents" data-id={item.objNews.Id} onclick={onContentsClick}>
+                        <div class="slds-size_1-of-1 img-box">
+                            <img src={item.objContents.ContentDownloadUrl} alt="" height="222" class="slds-size_1-of-1">
+                        </div>
+                        <div class="slds-size_1-of-1 slds-p-around_medium card">
+                            <div class="slds-grid slds-wrap slds-size_1-of-1 slds-m-bottom_small slds-text-heading_medium card-title">
+                                <strong>{item.objNews.Title__c}</strong>
+                            </div>
+                            <lightning-formatted-rich-text class="slds-grid slds-wrap slds-size_1-of-1 slds-text-heading_small card-body" value={item.objNews.Contents__c}></lightning-formatted-rich-text>
+                        </div>
+                        <div class="slds-grid slds-size_1-of-1 slds-p-horizontal_medium slds-p-bottom_medium info-box">
+                            <strong>
+                                <lightning-button variant="brand" label={item.objNews.Topic__c} title={item.objNews.Topic__c} data-type={item.objNews.Topic__c} onclick={onTopicClick}></lightning-button>
+                                <a class="slds-p-horizontal_small" data-value={item.objNews.Category__c} onclick={onCategoryClick}>{item.objNews.Category__c}</a>
+                            </strong>
+                            <div class="date">{item.formatDate}</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <!-- <template lwc:if={isAddButton}>
+            <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-top_medium slds-align_absolute-center bottom-box">
+                <lightning-button variant="Neutral" label="SHOW MORE" title="SHOW MORE" onclick={onShowMoreButton}></lightning-button>
+            </div>
+        </template> -->
+    </div>
+    <div class="slds-align_absolute-center">
+        <lightning-button-group>
+            <lightning-button label="<<" onclick={onArrowClick}></lightning-button>
+            <lightning-button label="<" onclick={onArrowClick}></lightning-button>
+            <template for:each={pageNumList} for:item="num" for:index="idx">
+                <template lwc:if={num.active}>
+                    <lightning-button key={num.value} variant="brand" label={num.value} onclick={onPageNumClick}></lightning-button>
+                </template>
+                <template lwc:else>
+                    <lightning-button key={num.value} label={num.value} onclick={onPageNumClick}></lightning-button>
+                </template>
+            </template>
+            <lightning-button label=">" onclick={onArrowClick}></lightning-button>
+            <lightning-button label=">>" onclick={onArrowClick}></lightning-button>
+        </lightning-button-group>
+    </div>
+</template>

@@ -1,0 +1,209 @@
+<!--
+ - Created by 천유정 on 2023-10-30.
+ -->
+<aura:component access="global"
+                controller="PartsOrderItemCreateController"
+                implements="force:appHostable,force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" >
+    <aura:html tag="style">
+        .slds-modal__container{
+        min-width: 100% !important;
+        max-width: fit-content !important;
+        padding: 0 0px;
+        margin: 0 0rem;
+        }
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }
+        .slds-modal__content {
+        overflow: initial;
+        overflow-y: auto !important;
+        height: unset !important;
+        max-height: unset !important;
+        }
+    </aura:html>
+    <!--attribute-->
+    <aura:attribute name="recordId"         type="String"/>
+    <aura:attribute name="isShowPopup"	    type="Boolean"  default="false"/>
+    <aura:attribute name="toggleSpinner"	type="Boolean"  default="false"/>
+
+    <aura:attribute name="addType"          type="String"   default=""/>
+    <aura:attribute name="label"            type="String"   default=""/>
+
+    <aura:attribute name="listMasterData"   type="List"   default="[]"/>
+    <aura:attribute name="listLV1"   type="List"   default="['TRACTOR']"/>
+    <aura:attribute name="listLV2"   type="List"   default="[]"/>
+    <aura:attribute name="listLV3"   type="List"   default="[]"/>
+    <aura:attribute name="listParts"   type="List"   default="[]"/>
+
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>
+    <aura:attribute name="maxRowSelection" type="Integer" default="5"/>
+
+    <aura:attribute name="iframeUrl" type="String" default="https://patentimages.storage.googleapis.com/de/ee/b9/75afbda3c5f7cf/R1020020072494.png"/>
+    <aura:attribute name="width" type="String" default="100%"/>
+    <aura:attribute name="height" type="String" default="500px"/>
+    <aura:attribute name="scrolling" type="String" default="border: none; overflow: scroll;"/>
+    <aura:attribute name="frameBorder" type="String" default="auto"/>
+
+
+    <aura:attribute name="listTableColumnLabor"  type="List"   default="[]"/>
+    <aura:attribute name="listTableColumnParts"  type="List"   default="[]"/>
+
+    <aura:attribute name="lv1"   type="String"   default=""/>
+    <aura:attribute name="lv2"   type="String"   default=""/>
+    <aura:attribute name="model"   type="String"   default=""/>
+    <aura:attribute name="description" type="String" default=""/>
+    <aura:attribute name="items" type="Object" access="PRIVATE"/>
+    <aura:attribute name="selected" type="String" default=""/>
+
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />
+    <div class="slds-card">
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Header -->
+            <header class="slds-modal__header">
+                <h2 class="slds-text-heading_medium" id="modal-heading-id">Add Parts</h2>
+            </header>
+            <!-- Content -->
+            <div class="slds-modal__content slds-p-around_medium slds-scrollable_y" id="modal-content-id-1">
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="3">
+                        <nav class="slds-nav-vertical" aria-label="Sub page">
+                            <div class="slds-form-element slds-p-horizontal_large">
+                                <label class="slds-form-element__label slds-assistive-text" for="input-id-01">Filter navigation items</label>
+                                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left">
+                                    <span class="slds-icon_container slds-icon-utility-search">
+
+                                    </span>
+                                    <lightning:select name="Lv1" label="Product" required="false" value="{!v.lv1}" class="laborGroup" onchange="{!c.handleChange}">
+                                        <aura:iteration items="{!v.listLV1}" var="data">
+                                            <option text="{!data}" value="{!data}"></option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <label for="input-52" class="slds-form-element__label">Model</label>
+                                    <lightning:input type="text" value="{!v.model}" variant="label-hidden" label="Model"/>
+                                    <!--<div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left">
+                                        <span class="slds-icon_container slds-icon-utility-search" title="Description of icon when needed">
+                                            <span class="slds-icon slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" aria-hidden="true">
+                                                <lightning:icon aura:id="articleOne" iconName="utility:search" size="x-small" alternativeText="switch"/>
+                                            </span>
+                                          <span class="slds-assistive-text">Description of icon when needed</span>
+                                        </span>
+                                        <input type="search" aria-controls="tree-id" id="filter-id" placeholder="Quick Find" class="slds-input" value="{!v.model}"/>
+                                    </div>-->
+                                    <lightning:button class="slds-m-top_small custom-button" variant="brand" name="검색" label="{!$Label.c.Search}" onclick="{!c.fnSearch}"/>
+                                </div>
+                            </div>
+                            <div class="slds-nav-vertical__section slds-p-horizontal_large">
+                            <div class="slds-tree_container">
+                                <lightning:tree header="Search Result"/>
+                                <div style="min-height:600px; max-height:600px; overflow-y:auto">
+                                    <lightning:tree items="{!v.items}" onselect="{! c.handleSelect }"/>
+                                </div>
+                            </div>
+                            </div>
+                        </nav>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="9">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutitem size="12">
+                                <div style="height:30rem;">
+                                    <iframe src="{!v.iframeUrl}"
+                                        width="{!v.width}"
+                                        height="{!v.height}"
+                                        style="{!v.style}"
+                                        frameBorder="{!v.frameBorder}"
+                                        sandbox="{!v.sandbox}"
+                                        scrolling="{!v.scrolling}"/>
+                                </div>
+                            </lightning:layoutitem>
+                            <lightning:layoutitem size="12">
+                                    <!--<lightning:datatable
+                                            columns="{! v.columns }"
+                                            data="{! v.listParts }"
+                                            keyField="id"
+                                            maxRowSelection="{! v.maxRowSelection }"
+                                            onrowselection="{! c.handleSelectParts }"
+                                    />-->
+                                <div class="custom-dropbox slds-scrollable_x slds-scrollable_y pTable" style="margin-top:1rem; height:25rem; padding-top:1rem;">
+                                    <lightning:recordEditForm objectApiName="Parts__c">
+                                    <table  aria-multiselectable="false" role="grid" class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_col-bordered cTable" >
+                                        <colgroup>
+                                            <col width="5%"/>       <!--No.-->
+                                            <col width="10%"/>       <!--Order Qty-->
+                                            <col width="9%"/>      <!--Add Cart-->
+                                            <col width="15%"/>      <!--Part No-->
+                                            <col width="15%"/>      <!--Supplied Part No-->
+                                            <col width="20%"/>      <!--Description-->
+                                            <col width="6%"/>       <!--Qty-->
+                                            <col width="20%"/>      <!--Applied Date-->
+                                        </colgroup>
+                                        <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="slds-cell-wrap">No.</th>
+                                            <th class="slds-cell-wrap">Order Qty</th>
+                                            <th class="slds-cell-wrap">Add Cart</th>
+                                            <th class="slds-cell-wrap">Part No</th>
+                                            <th class="slds-cell-wrap">Supplied Part No</th>
+                                            <th class="slds-cell-wrap">Description</th>
+                                            <th class="slds-cell-wrap">Qty</th>
+                                            <th class="slds-cell-wrap">Applied Date</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <aura:if isTrue="{!v.listParts.length > 0}">
+                                            <!--Default-->
+                                            <aura:iteration items="{!v.listParts}" var="obj" indexVar="idx">
+                                                <tr aria-selected="false" class="slds-hint-parent">
+                                                    <td class="nolabel slds-cell-wrap" title="No.">
+                                                        {!obj.No1__c}
+                                                    </td>
+                                                    <td class="nolabel slds-cell-wrap" title="Order Qty">
+                                                        <lightning:inputField fieldName="Quantity__c" value="{!obj.Quantity__c}" variant="label-hidden" class="{!'Parts-RequestQuantity-' + idx}"/>
+                                                    </td>
+                                                    <td class="slds-cell-wrap" data-label="button" scope="row" data-index="{!idx}" style="text-align: center;">
+                                                        <a onclick="{!c.handleSelect}" data-record="{!idx}">
+                                                            <lightning:icon iconName="utility:cart" size="xx-small" alternativeText="cart"/>
+                                                            <span class="slds-assistive-text">cart</span> 
+                                                        </a>
+                                                    </td>
+                                                    <td class="slds-cell-wrap" title="Part No">
+                                                        {!obj.fm_PartNo__c}
+                                                    </td>
+                                                    <td class="slds-cell-wrap" title="Supplied Part No">
+                                                        {!obj.fm_suppliedPartNo__c}
+                                                    </td>
+                                                    <td class="slds-cell-wrap" title="Description">
+                                                        {!obj.fm_PartName__c}
+                                                    </td>
+                                                    <td class="slds-cell-wrap" title="on Hand">
+                                                        {!obj.fm_onHand__c}
+                                                    </td>
+                                                    <td class="slds-cell-wrap" title="Applied Date">
+                                                        {!obj.AppliedDate__c}
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                            <aura:set attribute="else">
+                                                <tr>
+                                                    <td colspan="11" style="height:5rem; text-align:center">
+                                                        There is nothing to display.
+                                                    </td>
+                                                </tr>
+                                            </aura:set>
+                                        </aura:if>
+                                        </tbody>
+                                    </table>
+                                    </lightning:recordEditForm>
+                                </div>
+                            </lightning:layoutitem>
+                        </lightning:layout>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+        </div>
+    </div>
+</aura:component>

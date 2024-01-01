@@ -1,0 +1,21 @@
+/*************************************************************
+ * @author : th.kim
+ * @date : 2023-10-26
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver Date Author Modification
+ 1.0    Initial Version
+**************************************************************/
+
+p {
+    color: gray;
+}
+
+button {
+    border: 0;
+    font-weight: bold;
+    background-color: white;
+    color: gray;
+}

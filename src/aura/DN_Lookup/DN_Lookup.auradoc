@@ -1,0 +1,10 @@
+<!--
+ - Created by 천유정 on 2022-08-17.
+ -->
+
+<aura:documentation>
+    <aura:description>Documentation</aura:description>
+    <aura:example name="ExampleName" ref="exampleComponentName" label="Label">
+        Example Description
+    </aura:example>
+</aura:documentation>

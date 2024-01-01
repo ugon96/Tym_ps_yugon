@@ -1,0 +1,33 @@
+<!--
+ - Created by 천유정 on 2023-11-07.
+ -->
+
+<aura:component description="Community_ButtonList_Claim"
+                controller="Community_ButtonList_ClaimController"
+                implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" access="global">
+
+    <aura:attribute name="recordId" type="String"/>
+
+    <lightning:quickActionAPI aura:id="quickActionAPI" />
+
+    <!--Attribute-->
+    <aura:attribute name="isShowBtnPrint" type="Boolean" default="true"/>
+    <aura:attribute name="isPDFModalOpen" type="Boolean" default="true"/>
+    <aura:attribute name="isShowSpinnerButton" type="Boolean" default="false"/>
+    <aura:attribute name="CustomComponent" type="Aura.Component" />
+
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />
+    <aura:handler name="Community_ButtonList_evt" event="c:Community_ButtonList_evt" action="{!c.fnCommunityButtonEvt}"/>
+
+    <aura:if isTrue="{!v.isShowSpinnerButton}">
+        <lightning:spinner alternativeText="Loading" size="large" variant="brand"/>
+    </aura:if>
+
+    <div style="text-align:right;">
+        <aura:if isTrue="{!v.isShowBtnPrint}">
+            <lightning:button label="Print" onclick="{!c.fnCreatePrintComponent}"/>
+        </aura:if>
+    </div> 
+    {!v.CustomComponent}
+</aura:component>

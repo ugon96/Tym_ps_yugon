@@ -1,0 +1,12 @@
+/**
+ * Created by Taejun.Kang on 2023-11-13.
+ */
+
+.THIS slds-modal slds-fade-in-open cApprovalLine{
+    width:100%;
+}
+
+.THIS btn3{
+    text:bold;
+    margin:0px !important;
+}

@@ -1,0 +1,60 @@
+<!--
+ * @author : th.kim
+ * @date : 2023-11-24
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver          Date            Author          Modification
+   1.0          2023-11-24      th.kim         Initial Version
+-->
+<!-- Tym Custom Path -->
+
+<template>
+    <div class="slds-card slds-p-around_medium">
+        <lightning-progress-indicator current-step={statusValue} type="path" variant="base" class="path">
+            <template lwc:if={isClaim}>
+                <div class="slds-p-right_medium">
+                    <template lwc:if={isSubmitted}>
+                        <div class="non-active transition" onclick={handleShowMore}>
+                            <lightning-button-icon icon-name="utility:down" size="medium" alternative-text="Show More"></lightning-button-icon>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="non-active">
+                            <lightning-button-icon icon-name="utility:down" size="medium" alternative-text="Show More" disabled></lightning-button-icon>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template for:each={statusList} for:item="status" for:index="idx">
+                <template lwc:if={status.isView}>
+                    <lightning-progress-step key={status.value} label={status.label} value={status.value} onclick={handlePathClick}></lightning-progress-step>
+                </template>
+            </template>
+        </lightning-progress-indicator>
+        <template lwc:if={isAccordion}>
+            <div class="slds-grid slds-wrap slds-size_1-of-1 slide-down">
+                <div class="slds-size_1-of-1 slds-p-vertical_medium">
+                    <h1 class="slds-text-heading_small title">Key Fields</h1>
+                </div>
+                <div class="slds-size_1-of-1 slds-p-vertical_x-small slds-border_bottom">
+                    <p class="slds-size_1-of-1">Photo of Hour Meter</p>
+                    <lightning-input type="checkbox" name="input1" checked={isPhotoHourMeter__c} disabled></lightning-input>
+                </div>
+                <div class="slds-size_1-of-1 slds-p-vertical_x-small slds-border_bottom">
+                    <p class="slds-size_1-of-1">Photo of Serial Number</p>
+                    <lightning-input type="checkbox" name="input2" checked={isPhotoSerialNo__c} disabled></lightning-input>
+                </div>
+                <div class="slds-size_1-of-1 slds-p-vertical_x-small slds-border_bottom">
+                    <p class="slds-size_1-of-1">Photo of Tractor during repair</p>
+                    <lightning-input type="checkbox" name="input3" checked={isPhotoRepair__c} disabled></lightning-input>
+                </div>
+                <div class="slds-size_1-of-1 slds-p-vertical_x-small slds-border_bottom">
+                    <p class="slds-size_1-of-1">Photo of failure part</p>
+                    <lightning-input type="checkbox" name="input4" checked={isPhotoFailurePart__c} disabled></lightning-input>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

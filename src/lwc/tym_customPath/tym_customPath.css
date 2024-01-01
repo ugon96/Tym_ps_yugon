@@ -1,0 +1,49 @@
+/*************************************************************
+ * @author : th.kim
+ * @date : 2023-11-24
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver        Date        Author        Modification
+   1.0                    Initial Version
+**************************************************************/ 
+
+.title {
+    font-weight: bold;
+}
+
+.non-active {
+    transform: rotate(-90deg);
+}
+
+.transition {
+    transition: 0.3s ease-in-out;
+}
+
+.slide-down {
+    animation-name: slide-down;
+    animation-duration: 0.3s;
+    animation-iteration-count: 1;
+}
+
+.path {
+    display: grid;
+}
+
+@keyframes slide-down {
+    0% {
+        transform: scaleY(0);
+        transform-origin: 0 0;
+    }
+    100% {
+        transform: scaleY(1);
+        transform-origin: 0 0;
+    }
+}
+
+@media screen and (max-width: 540px) {
+    .path {
+        overflow-x: auto;
+    }
+}

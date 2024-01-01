@@ -1,0 +1,8 @@
+<!--
+ - Created by ally6 on 2023-11-22.
+ -->
+
+<aura:component description="ClaimPost" controller="ClaimPostController" implements="force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes">
+    <aura:attribute name="myClaim" type="Object" default=""/>
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />
+</aura:component>

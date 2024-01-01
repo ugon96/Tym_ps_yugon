@@ -1,0 +1,193 @@
+<!--
+ - Created by 천유정 on 2023-10-04.
+ -->
+
+<aura:component description="ClaimViewDetail_AddModal"
+                controller="ClaimViewDetailController" implements="force:appHostable,force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global" >
+    <!--attribute-->
+    <aura:attribute name="recordId"         type="String"/>
+    <aura:attribute name="isShowPopup"	    type="Boolean"  default="false"/>
+    <aura:attribute name="isShowSpinner"	type="Boolean"  default="false"/>
+
+    <aura:attribute name="addType"          type="String"   default=""/>
+    <aura:attribute name="label"            type="String"   default=""/>
+    <aura:attribute name="model"            type="String"   default=""/>
+
+    <aura:attribute name="listMasterData"   type="List"   default="[]"/>
+    <aura:attribute name="listSRT1"   type="List"   default="[]"/>
+    <aura:attribute name="listSRT2"   type="List"   default="[]"/>
+
+    <!--실제 사용-->
+    <aura:attribute name="mapSRT"           type="Map"    />
+    <aura:attribute name="listLaborGroup"   type="List"   default="[]"/>
+    <aura:attribute name="listDiagram"      type="List"   default="[]"/>
+    <aura:attribute name="listLaborCode"    type="List"   default="[]"/>
+    <aura:attribute name="listLaborCodeAll"    type="List"   default="[]"/> 
+
+    <aura:attribute name="listTableColumnLabor"  type="List"   default="[]"/>
+    <aura:attribute name="listTableColumnParts"  type="List"   default="[]"/>
+
+    <aura:attribute name="srt1"   type="String"   default=""/>
+    <aura:attribute name="srt2"   type="String"   default=""/>
+
+    <aura:attribute name="laborGroup"   type="String"   default=""/>
+    <aura:attribute name="diagram"   type="String"   default=""/>
+    <aura:attribute name="laborCode"   type="String"   default=""/>
+    <aura:attribute name="description" type="String" default=""/>
+    <aura:attribute name="searchKey" type="String" default=""/>
+
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />
+    <aura:registerEvent name="ClaimViewDetail_evt" type="c:ClaimViewDetail_evt"/>
+
+    <lightning:button label="Add" onclick="{!c.openModel}" variant="neutral"/>
+
+    <aura:if isTrue="{!v.isShowPopup}">
+        <div aura:id="modalContainer">
+            <section role="alertdialog" tabindex="-1" aria-labelledby="modal-heading-id" aria-describedby="modal-content-id" class="slds-modal slds-modal_large slds-fade-in-open" aria-modal="true">
+                <aura:if isTrue="{!v.isShowSpinner}">
+                    <lightning:spinner aura:id="spinner" alternativeText="Loading" variant="brand" size="large" />
+                </aura:if>
+
+                <div class="slds-modal__container">
+                    <!-- Header -->
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium" id="modal-heading-id">Choose {!v.label}</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="overflow:clip;">
+                        <lightning:recordEditForm objectApiName="LaborCodeMaster__c">
+                            <lightning:layout>
+                                <lightning:layoutItem size="12">
+                                    <div style="text-align:center;">
+                                        <h3 class="slds-section__title slds-theme_shade slds-size_1-of-1 slds-m-bottom_x-small">
+                                            <span class="slds-truncate slds-p-horizontal_small" title="Labor Code 검색" style="font-weight:bold">
+                                                Search {!v.label}
+                                            </span>
+                                        </h3>
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                            <lightning:layout multipleRows="true">
+                                <lightning:layoutItem size="3" padding="horizontal-small">
+                                    <lightning:select name="srt1" label="Labor Group" required="false" value="{!v.laborGroup}" class="laborGroup" onchange="{!c.handleChange}">
+                                        <aura:iteration items="{!v.listLaborGroup}" var="data">
+                                            <option text="{!data.labelName}" value="{!data.value}"></option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="3" padding="horizontal-small">
+                                    <lightning:select name="select1" label="Diagram" required="false" value="{!v.diagram}" class="diagram" onchange="{!c.handleChange}">
+                                        <aura:iteration items="{!v.listDiagram}" var="data">
+                                            <option text="{!data.labelName}" value="{!data.value}"></option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="3" padding="horizontal-small">
+                                    <lightning:select name="select1" label="Labor Code" required="false" value="{!v.laborCode}" class="laborCode">
+                                        <aura:iteration items="{!v.listLaborCode}" var="data">
+                                            <option text="{!data.labelName}" value="{!data.value}"></option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="3" padding="horizontal-small">
+                                    <lightning:input type="text" name="Labor Code" label="Labor Code" value="{!v.searchKey}"/>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                            <lightning:layout>
+                                <lightning:layoutItem size="12" padding="horizontal-small" class="slds-text-align_right">
+                                    <lightning:button class="slds-m-top_small" variant="brand" name="검색" label="{!$Label.c.Search}" onclick="{!c.fnSearch}"/>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </lightning:recordEditForm>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="overflow:clip;">
+                        <lightning:layout>
+                            <lightning:layoutItem size="12">
+                                <div style="text-align:center;">
+                                    <h3 class="slds-section__title slds-theme_shade slds-size_1-of-1 slds-m-bottom_x-small">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Account 검색" style="font-weight:bold">
+                                            Search Result
+                                        </span>
+                                    </h3>
+                                </div>
+                                <div style="max-height:15rem; overflow-y:auto; overflow-x:clip;">
+                                    <table class="slds-table slds-table_cell-buffer slds-table_bordered table-layout-fixed" style="max-height:10rem;">
+                                        <colgroup>
+                                            <col width="15%"/>       <!--Labor Code-->
+                                            <col width="15%"/>       <!--Labor Group-->
+                                            <col width="30%"/>       <!--Diagram-->
+                                            <col width="30%"/>       <!--Description-->
+                                            <col width="10%"/>       <!--Labor Hour-->
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <aura:iteration items="{!v.listTableColumnLabor}" var="FieldValues" indexVar="ind">
+                                                <th aria-label="Name" aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
+                                                    <span class="slds-assistive-text">Sort by: </span>
+                                                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                        <span class="slds-truncate" title="{!FieldValues}">{!FieldValues}</span>
+                                                    </div>
+                                                    <div class="slds-resizable">
+                                                        <input type="range" aria-label="Name column width" class="slds-resizable__input slds-assistive-text" id="cell-resize-handle-638" max="1000" min="20" tabindex="0" />
+                                                        <span class="slds-resizable__handle"></span>
+                                                    </div>
+                                                </th>
+                                            </aura:iteration>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <aura:if isTrue="{!v.listMasterData.length != 0}">
+                                            <aura:iteration items="{!v.listMasterData}" var="item" indexVar="index">
+                                                <tr class="slds-hint-parent" data-index="{!index}" onclick="{!c.handlerClickList}" style="cursor:pointer">
+                                                    <td data-label="Labor Group" data-index="{!index}">
+                                                        <div class="slds-truncate" title="" data-index="{!index}"> {!item.LaborGroup__c}</div>
+                                                    </td>
+                                                    <td data-label="Diagram" data-index="{!index}">
+                                                        <div class="slds-truncate" title="" data-index="{!index}"> {!item.Diagram__c}</div>
+                                                    </td>
+                                                    <td data-label="Labor Code" data-index="{!index}">
+                                                        <div class="slds-truncate" title="" data-index="{!index}">{!item.LaborCode__c}</div>
+                                                    </td>
+                                                    <td data-label="Description" data-index="{!index}">
+                                                        <div class="slds-truncate" title="" data-index="{!index}"> {!item.Description__c}</div>
+                                                    </td>
+                                                    <td data-label="Labor Hour" data-index="{!index}">
+                                                        <div class="slds-truncate" title="" data-index="{!index}"> {!item.LaborHour__c}</div>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                            <aura:set attribute="else">
+                                                <tr>
+                                                    <td colspan="5" style="height:5rem; text-align:center">
+                                                        There is nothing to display.
+                                                    </td>
+                                                </tr>
+                                            </aura:set>
+                                        </aura:if>
+                                        </tbody>
+                                    </table>
+
+                                    <aura:if isTrue="{! and(v.totalCount > v.viewCount , v.totalCount > v.curCount )}">
+                                        <div class="slds-grid slds-p-top_small slds-align_absolute-center">
+                                            <lightning:buttonIcon iconName="utility:down"  variant="bare" alternativeText="View More"/>
+                                            <a class="slds-button" href="javascript:void(0);" onclick="{!c.fnListMore}">Show More...</a>
+                                        </div>
+                                    </aura:if>
+                                </div>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </div>
+
+                    <!-- Footer -->
+                    <footer class="slds-modal__footer">
+                        <lightning:button label="Cancel" onclick="{!c.fnCancel}" />
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+        </div>
+    </aura:if>
+</aura:component>

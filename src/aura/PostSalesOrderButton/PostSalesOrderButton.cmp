@@ -1,0 +1,56 @@
+<!--
+ - Created by 천유정 on 2023-11-29.
+ -->
+
+<aura:component description="PostSalesOrderButton"
+                implements="force:hasRecordId,force:lightningQuickActionWithoutHeader"
+                controller="PostSalesOrderButtonController">
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="isConfirmedOrder" type="Boolean" default="false"/>
+    <aura:attribute name="isShowSpinner" type="Boolean" default="true"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+
+    <section role="alertdialog" tabindex="-1" aria-labelledby="modal-heading-id" aria-describedby="modal-content-id"
+             class="slds-modal slds-modal_large slds-fade-in-open" aria-modal="true">
+        <aura:if isTrue="{!v.isShowSpinner}">
+            <lightning:spinner aura:id="spinner" alternativeText="Loading" variant="brand" size="large"/>
+        </aura:if>
+
+        <div class="slds-modal__container">
+            <!-- Header -->
+            <header class="slds-modal__header">
+                <h2 class="slds-text-heading_medium" id="modal-heading-id">Send to SAP</h2>
+            </header>
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="overflow:clip;">
+                <lightning:layout>
+                    <lightning:layoutItem size="12">
+                        <div style="text-align:center;">
+                            <p>
+                                Would you like to send this data to SAP?
+                            </p>
+                            <aura:if isTrue="{!!v.isConfirmedOrder}">
+                                <p>
+                                    <br/>
+                                    You need to confirm order before sand to SAP.<br/>
+                                    Once an order is confirmed, it cannot be changed or canceled.
+                                </p>
+                            </aura:if>
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            <footer class="slds-modal__footer">
+                <lightning:button label="Cancel" onclick="{!c.fnCancel}"/>
+                <aura:if isTrue="{!!v.isConfirmedOrder}">
+                    <lightning:button label="Confirm Order" onclick="{!c.fnConfirm}" variant="brand"/>
+                    <aura:set attribute="else">
+                        <lightning:button label="Send" onclick="{!c.fnSend}" variant="brand"/>
+                    </aura:set>
+                </aura:if>
+            </footer>
+        </div>
+    </section>
+</aura:component>

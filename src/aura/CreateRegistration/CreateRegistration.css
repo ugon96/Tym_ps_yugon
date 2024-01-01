@@ -1,0 +1,89 @@
+/**
+ * Created by yghwang on 2023-09-01.
+ */
+
+.THIS {
+}
+
+.THIS #header-title{
+/*    float:left;*/
+    font-weight:bold;
+    font-size : 30px;
+}
+
+.THIS :host {
+    --slds-c-textarea-sizing-min-height: 200px;
+}
+
+.THIS .accordion-header{
+    border:1px solid lightgray;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.THIS .content-title {
+    font-weight: 500;
+    font-size: 24px;
+}
+
+.THIS .input-label {
+    font-weight: 700;
+    font-size: 14px;
+}
+.THIS .content-subtitle {
+    font-style: italic;
+    font-size: 14px;
+    line-height: 22px;
+    color: #5f5f5f;
+}
+.THIS .slds-accordion__summary-action {
+    background:lightgray;
+}
+.THIS .accordion-description {
+    height : 100px;
+    text-align : center;
+}
+.THIS .amount-calculation-box{
+    height : 50px;
+    text-align : center;
+    vertical-align : middle;
+}
+.THIS .accordion-content {
+    border : 1px solid lightgray;
+    height : 50px;
+    text-align : center;
+}
+
+.THIS .warranty-information-button{
+    width : 100%;
+    height : 50px;
+}
+
+.THIS .warranty-helptext {
+    float : right;
+}
+
+.THIS .slds-input[readonly] {
+    background-color : #f3f3f3;
+    border-color : lightgray;
+    padding-left:5px;
+
+}
+
+.THIS .padding-left {
+}
+
+.THIS .new-customer-button-container {
+    text-align: right;
+}
+
+.THIS .slds-listbox {
+/*    position : relative;*/
+/*    left : 92px;*/
+/*    top : 35px;*/
+}
+
+.THIS .clicked-button {
+    background-color : rgb(196, 27, 50);
+    color : white;
+}

@@ -1,0 +1,134 @@
+<!--
+ - Created by Taejun.Kang on 2023-10-31.
+ -->
+
+<aura:component controller="ApprovalLinesController"
+                implements="flexipage:availableForAllPageTypes,force:hasRecordId">
+    <!-- parameter sjTEst-->
+    <!--<aura:attribute name="bHistory"         type="Boolean"  default="false" description="상위 컴포넌트(ApprovalHistory.cmp)에서 호출됐는지"/>
+    <aura:attribute name="userId"           type="Id"       />
+    <aura:attribute name="sObjectName"      type="String"   />
+    <aura:attribute name="sHistoryRecordId" type="String"   />
+
+    &lt;!&ndash; Component Attribute &ndash;&gt;
+    <aura:attribute name="sComponentName"   type="String"   />
+    <aura:attribute name="sIconName"        type="String"   />
+
+    <aura:attribute name="mapReturnValue"   type="Map"      />
+    <aura:attribute name="listLabel"        type="List"     />
+    <aura:attribute name="listObjUser"      type="List"     />
+    <aura:attribute name="iLineLimit"       type="Integer"  />
+    <aura:attribute name="iApproverLimit"   type="Integer"  />
+
+    <aura:attribute name="objUser"          type="User" />
+    <aura:attribute name="LineCraetCmp"     type="Aura.Component" />
+
+    &lt;!&ndash; Handler &ndash;&gt;
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />
+
+    &lt;!&ndash; Dependency Event Handler &ndash;&gt;
+    <aura:dependency resource="markup://force:refreshView" type="EVENT" />
+    <aura:handler event="force:refreshView" action="{!c.fnInit}" />
+
+
+    &lt;!&ndash; Contents &ndash;&gt;
+    &lt;!&ndash; History 아닐 때 &ndash;&gt;
+    <aura:if isTrue="{!v.bHistory != true}" >
+        <article class="slds-card" style="border: 1px solid rgb(221, 219, 218); border-radius: .25rem;">
+            &lt;!&ndash; Card Header &ndash;&gt;
+            <div class="slds-card__header slds-grid" style="padding: .75rem 1rem 0;">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container slds-icon-standard-account" title="account">
+                            <lightning:icon iconName="{!v.sIconName}" size="small" />
+                            <span class="slds-assistive-text">{!v.sComponentName}</span>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <h2 class="slds-card__header-title">
+                            <a class="slds-card__header-link slds-truncate" title="{!v.sComponentName}" onclick="{!c.fnGoToRelatedView}">
+                                <span>
+                                    {!v.sComponentName} ({!v.listLabel.length})
+                                </span>
+                            </a>
+                        </h2>
+                    </div>
+                    <div class="slds-no-flex">
+                        <lightning:button label="{!$Label.c.New}" onclick="{!c.fnClickNew}" />
+                    </div>
+                </header>
+            </div>
+            &lt;!&ndash; Card Body &ndash;&gt;
+            <div class="slds-card__body slds-card__body_inner">
+                <lightning:layout multipleRows="true">
+                    <aura:Iteration items="{!v.listLabel}" var="objWrap" indexVar="idx" aura:id="labelName">
+                        <lightning:layoutItem padding="around-small" size="5" >
+                            {!objWrap.label}
+                            &lt;!&ndash; 승인자리스트 불러오는 cmp  &ndash;&gt;
+                            <c:ApprovalLinesChild mapValue = "{!objWrap.userDatas}" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem padding="around-small" size="1">
+                            <div style="text-align:right">
+                                <lightning:buttonMenu iconSize="xx-small" title="{!objWrap.label}" name="{!objWrap.fieldName}" aura:id="menu"
+                                                      alternativeText="Show menu" onselect="{! c.handleSelect }" menuAlignment="right" class="{!idx}">
+&lt;!&ndash;                                    <lightning:menuItem value="Edit"    label="{!$Label.c.Edit}"  title="{!idx}"/>&ndash;&gt;
+&lt;!&ndash;                                    <lightning:menuItem value="Delete"  label="{!$Label.c.delete}" />&ndash;&gt;
+                                </lightning:buttonMenu>
+                            </div>
+                        </lightning:layoutItem>
+                    </aura:Iteration>
+                </lightning:layout>
+            </div>
+        </article>
+
+
+        <aura:set attribute="else">
+            <div class="custom_modal demo-only" style="height: 640px;" aura:id="divModal">
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                    <div class="slds-modal__container">
+                        &lt;!&ndash; Header &ndash;&gt;
+                        <header class="slds-modal__header">
+                            <lightning:buttonIcon iconName="utility:close" variant="bare" onclick="{!c.fnClose }" alternativeText="close"
+                                                  class="slds-modal__close slds-button_icon-inverse" />
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
+&lt;!&ndash;                                {!$Label.c.Approval_ApprovalLine}&ndash;&gt;
+                            </h2>
+                        </header>
+
+                        <div class="slds-modal__content slds-p-around_large" id="modal-content-id-1">
+                            <lightning:layout multipleRows="true">
+                                <aura:Iteration items="{!v.listLabel}" var="objWrap" indexVar="idx" aura:id="labelName">
+                                    <lightning:layoutItem padding="around-small" size="6" >
+                                        &lt;!&ndash; 버튼화 &ndash;&gt;
+                                        <lightning:button variant="base" label="{!objWrap.label}" title=""
+                                                          onclick="{!c.fnEdit}" value="{!idx}" class="" name="objWrap.fieldName"/>
+                                        &lt;!&ndash; 승인자리스트 불러오는 cmp  &ndash;&gt;
+                                        <c:ApprovalLinesChild mapValue = "{!objWrap.userDatas}" />
+                                    </lightning:layoutItem>
+                                </aura:Iteration>
+                                <lightning:layout multipleRows="true">
+                                    &lt;!&ndash; <lightning:layoutItem  size="6" > &ndash;&gt;
+&lt;!&ndash;                                    <lightning:button name="" label="{!$Label.c.CreateAnotherApprover}" onclick="{!c.fnClickNew}" />&ndash;&gt;
+                                    &lt;!&ndash; </lightning:layoutItem> &ndash;&gt;
+                                </lightning:layout>
+                            </lightning:layout>
+                        </div>
+
+
+
+                        <footer class="slds-modal__footer">
+                            <lightning:button name="" label="{!$Label.c.Cancel}" aura:id="" onclick="{!c.fnClose}"  />
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </div>
+
+        </aura:set>
+
+
+    </aura:if>
+
+    {!v.LineCraetCmp}-->
+</aura:component>

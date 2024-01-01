@@ -1,0 +1,185 @@
+<!--
+ - Created by yghwang on 2023-11-20.
+ -->
+
+<aura:component description="EditOrderSummary" controller="CreateOrderController"
+                implements="force:hasRecordId,flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable,force:hasSObjectName,flexipage:availableForRecordHome,lightning:actionOverride"
+                access="global">
+    <lightning:layout multipleRows="true">
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <div class="content-title" id="Sale-Info-title">
+                               <span>
+                                   {!$Label.c.Major_Configuration}
+                               </span>
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <div class="content-subtitle" id="Sale-Info-title">
+                               <span>
+                                   {!$Label.c.Major_Configuration_Subtitle}
+                               </span>
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <div class="slds-p-around_small" style="background-color:#f3f3f3">
+                Tractor, Configuration &amp; Tires
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <lightning:layout multipleRows="false">
+                <lightning:layoutItem size="9">
+                    <div class="">
+                        <aura:if isTrue="{!and(v.imageUrl != null, v.imageUrl != '')}">
+                            <img class="image-box slds-container_center" src="{!v.imageUrl}"/>
+                            <aura:set attribute="else">
+                                <div class="image-box">
+                                    No Tractor Selected
+                                </div>
+                            </aura:set>
+                        </aura:if>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem class="slds-grid_vertical-align-center" size="3">
+                    <div class="assembled-checkbox">
+                        <lightning:input label="Assembled (Y/N)"
+                                         type="checkbox" value="{!v.isAssembled}"/>
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+
+            <div>
+                <lightning:select aura:id="selectTractor" label="Model" name="selectTractor" onchange="{!c.handleModelChanged}">
+                    <aura:iteration items="{!v.tractorOptions}" var="tractorOption">
+                        <option text="{!tractorOption}" value="{!tractorOption}"
+                                selected="{!tractorOption.selected}"/>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+            <div>
+                <lightning:select aura:id="selectConfig" label="Configuration" name="selectConfig" onchange="{!c.handleConfigChanged}">
+                    <aura:iteration items="{!v.configOptions}" var="configOption">
+                        <option text="{!configOption.Child__r.Name}" value="{!configOption.Child__c}"
+                                selected="{!configOption.selected}"/>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+            <div>
+                <lightning:select label="Tires" name="selectTire">
+                    <aura:iteration items="{!v.tireOptions}" var="tireOption">
+                        <option text="{!tireOption.Child__r.Name}" value="{!tireOption.Child__c}"
+                                selected="{!tireOption.selected}"/>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <div>
+                <div class="content-title option-container slds-p-vertical_small" id="Sale-Info-title">
+                                    <span>
+                                        Attachments
+                                    </span>
+                </div>
+            </div>
+            <lightning:layout multipleRows="true">
+                <lightning:layoutItem size="9">
+                    <div class="content-subtitle" id="Sale-Info-title">
+                                <span>
+                                    Select the Attachments you would like with your tractor order.
+                                </span>
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem class="slds-container_center slds-text-align_center" size="3">
+                    is Assembled(Y/N)
+                </lightning:layoutItem>
+            </lightning:layout>
+            <div>
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="9">
+                        <div>
+                            <lightning:select label="Loader" name="selectLoader">
+                                <aura:iteration items="{!v.loaderOptions}" var="loaderOption">
+                                    <option text="{!loaderOption.Name}" value="{!loaderOption.id}"
+                                            selected="{!loaderOption.selected}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-text-align_center slds-container_center slds-p-top_large" size="3">
+                        <!--                                        <label class="sldsparound" for="isLoaderAssembled">is Assembled(Y/N)</label>-->
+                        <lightning:input class="slds-p-around_xx-small" id="isLoaderAssembled" variant="label-hidden" label="is Assembled(Y/N)" type="checkbox" value="{!v.selectedLoader.isAssembled}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="9">
+                        <div>
+                            <lightning:select label="Backhoe" name="selectBackhoe">
+                                <aura:iteration items="{!v.backhoeOptions}" var="backhoeOption">
+                                    <option text="{!backhoeOption.Name}" value="{!backhoeOption.id}"
+                                            selected="{!backhoeOption.selected}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-text-align_center slds-container_center slds-p-top_large" size="3">
+                        <!--                                        <label class="sldsparound" for="isBackhoeAssembled">is Assembled(Y/N)</label>-->
+                        <lightning:input class="slds-p-around_xx-small" id="isBackhoeAssembled" variant="label-hidden" label="is Assembled(Y/N)" type="checkbox" value="{!v.selectedBackhoe.isAssembled}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="9">
+                        <div>
+                            <lightning:select label="Mower" name="selectMower">
+                                <aura:iteration items="{!v.mowerOptions}" var="mowerOption">
+                                    <option text="{!mowerOption.Name}" value="{!mowerOption.id}"
+                                            selected="{!mowerOption.selected}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-text-align_center slds-container_center slds-p-top_large" size="3">
+                        <!--                                        <label class="sldsparound" for="isMowerAssembled">is Assembled(Y/N)</label>-->
+                        <lightning:input class="slds-p-around_xx-small" id="isMowerAssembled" variant="label-hidden" label="is Assembled(Y/N)" type="checkbox" value="{!v.selectedMower.isAssembled}"/>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <div>
+                <div class="content-title option-container slds-p-vertical_small" id="Sale-Info-title">
+                                    <span>
+                                        Additional Options
+                                    </span>
+                </div>
+            </div>
+            <div class="content-subtitle" id="Sale-Info-title">
+                                <span>
+                                    Select the Add-Ons you would like with your tractor order.
+                                </span>
+            </div>
+            <div class="slds-p-around_small" style="background-color:#f3f3f3">
+                <lightning:layout>
+                    <lightning:layoutItem size="9">
+                        <p>Item</p>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-text-align_right" size="3">
+                        <p>Installation (Y/N)</p>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            <div class="slds-p-around_small slds-grid_vertical-align-center slds-text-align_center" style="border : 1px solid lightgray;">
+                <p>No results found</p>
+            </div>
+        </lightning:layoutItem>
+        <lightning:layoutItem class="slds-p-around_small" size="12">
+            <div>
+                <div class="content-title option-container slds-p-vertical_small" id="Sale-Info-title">
+                                    <span>
+                                        Item Notes
+                                    </span>
+                </div>
+            </div>
+            <div class="content-subtitle" id="Sale-Info-title">
+                                <span>
+                                    Tell us a little bit more about your order.
+                                </span>
+            </div>
+
+        </lightning:layoutItem>
+    </lightning:layout>
+</aura:component>

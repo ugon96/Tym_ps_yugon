@@ -1,0 +1,16 @@
+<!--
+ - Created by Taejun.Kang on 2023-10-31.
+ -->
+
+<aura:component >
+    <aura:attribute name="mapValue" type="Map" />
+
+    <!-- <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />	 -->
+    <aura:Iteration items="{!v.mapValue}" var="val">
+        <div class="custom-padding">
+            <lightning:layoutItem class="custom-padding" size="12">
+                 - {!val.Name}
+            </lightning:layoutItem>
+        </div>
+    </aura:Iteration>
+</aura:component>

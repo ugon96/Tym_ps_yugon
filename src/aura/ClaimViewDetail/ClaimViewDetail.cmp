@@ -1,0 +1,644 @@
+<!--
+ - Created by 천유정 on 2023-09-19.
+ -->
+
+<aura:component description="ClaimViewDetail"
+                controller="ClaimViewDetailController"
+                implements="force:appHostable,force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global" >
+    <!-- Design 용도 -->
+    <aura:attribute name="setHeader"            type="String"   default="Labor &amp; Parts Details"/>
+    <aura:attribute name="setIconName"          type="String"   default="standard:product_required"/>
+
+    <!-- DataTable 용도 -->
+    <aura:attribute name="objClaim"             type="Case"/>
+    <aura:attribute name="model"                type="String"/>
+    <aura:attribute name="factor"                type="Decimal"/>
+    <aura:attribute name="priceList"                type="String"/>
+    <aura:attribute name="InvoiceNumber"                type="String"/>
+
+    <!-- Table Column 값 지정 용도 -->
+    <aura:attribute name="TableDisplayList"         type="List"     default=""/>
+
+    <!-- Data (Default) -->
+    <aura:attribute name="listDataLabor"                 type="List"     default="[]"/>
+    <aura:attribute name="listDataParts"                 type="List"     default="[]"/>
+    <aura:attribute name="mapARInvoice"                 type="Map"     default="{}"/>
+    <aura:attribute name="mapUnitPriceByInvoice"        type="Map"     default="{}"/>
+    <aura:attribute name="mapListKey"        type="Map"     default="{}"/>
+    <aura:attribute name="listKey"                 type="List"     default="[]"/>
+
+    <!-- Data (Add/Edit) -->
+    <aura:attribute name="listDataLaborDeleted"                 type="List"     default="[]"/>
+    <aura:attribute name="listDataPartsDeleted"                 type="List"     default="[]"/>
+
+    <aura:attribute name="draftValueMap"            type="Map"      default="{}"/>
+    <aura:attribute name="draftValues"              type="Object"   default="[]"/>
+    <aura:attribute name="dataIdx"                  type="Integer"/>
+
+    <!-- Data (Footer의 Total 계산을 위한 값) -->
+    <aura:attribute name="TotalApprovedLaborCost"   type="Integer"/>
+    <aura:attribute name="TotalRequestLaborCost"    type="Integer"/>
+    <aura:attribute name="TotalApprovedPartsValue"  type="Integer"/>
+    <aura:attribute name="TotalRequestPartsValue"   type="Integer"/>
+
+    <!-- 수정/삭제 불가 Flag값-->
+    <aura:attribute name="isAvailableDelete"       type="Boolean"    default="false"/>
+    <aura:attribute name="isPartnerUser"           type="Boolean"    default="false"/>
+    <aura:attribute name="isAdministratorUser"     type="Boolean"    default="false"/>
+
+    <!-- Grid 화면에서 수정/삭제 불가 실질적 Setting 값-->
+    <aura:attribute name="isClickedAddEdit"           type="Boolean"    default="false"     description="Add/Edit 버튼을 눌렀는지 여부"/>
+    <aura:attribute name="isAbleClickAddEdit"         type="Boolean"    default="true"      description="Add/Edit 버튼을 클릭할 수 있는지 여부"/>
+    <aura:attribute name="isAbleToShowAdjusted"         type="Boolean"    default="false"      description="Adjusted 필드를 볼 수 있는지 여부"/>
+
+    <!-- Validation 용도 -->
+    <aura:attribute name="IsEmpty"              type="Boolean"  default="false"/>
+    <aura:attribute name="statusMsg"            type="String"   default="None"/>
+    <aura:attribute name="lastUpdate"           type="String"/>
+    <aura:attribute name="toggleSpinner"        type="Boolean"  default="false"/>
+
+    <!-- DN_Paging 용도 -->
+    <aura:attribute name="pageNumber"               type="Integer" default="1"      description="using for store page Number" />
+    <aura:attribute name="page"                     type="Integer"                  description="using for store page Number" />
+    <aura:attribute name="pages"                    type="Integer"                  description="using for store All Pages page Number" />
+    <aura:attribute name="total"                    type="Integer"                  description="total records count store " />
+    <aura:attribute name="maxPage"                  type="Integer" default="1"      description=""/>
+    <aura:attribute name="pageNumberParts"               type="Integer" default="1"      description="using for store page Number" />
+    <aura:attribute name="pageParts"                     type="Integer"                  description="using for store page Number" />
+    <aura:attribute name="pagesParts"                    type="Integer"                  description="using for store All Pages page Number" />
+    <aura:attribute name="totalParts"                    type="Integer"                  description="total records count store " />
+    <aura:attribute name="maxPageParts"                  type="Integer" default="1"      description=""/>
+    <aura:attribute name="pageRecords"              type="List"    default="[]"     description="DN_Paging으로 분기 처리된 Labor Code 목록"   access="global"/>
+    <aura:attribute name="pageRecordParts"          type="List"    default="[]"     description="DN_Paging으로 분기 처리된 Parts 목록"        access="global"/>
+
+    <!-- Standard Record Edit 감지하고 Refresh -->
+    <aura:handler event="force:refreshView" action="{!c.fnInit}" />
+
+    <!-- This attribute will hold the update records from data table-->
+    <aura:attribute name="updatedRecord" type="Object[]" />
+
+    <!-- DataTable Infinite 로딩용도-->
+    <aura:attribute name="listCurrentData"      type="List" default="[]"/>
+    <aura:attribute name="bEnableLoading"       type="Boolean"  default="false" />
+    <aura:attribute name="totalRows"            type="Integer" />
+    <aura:attribute name="currentRows"          type="Integer" default="0"/>
+    <aura:attribute name="loadMoreRows"         type="Integer" default="10"/>
+    <aura:attribute name="loadMoreStatus"       type="String"/>
+    <aura:attribute name="recordId"            type="String"/>
+    <aura:attribute name="mouseOver" type="boolean" />
+
+    <!-- Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+    <aura:handler name="ClaimViewDetail_evt" event="c:ClaimViewDetail_evt" action="{!c.fnEventAddRowLabor}"/>
+    <aura:handler name="lookupSelected" event="c:DN_LookupSelected_evt" action="{!c.fnHandleSelected}"/>
+    <aura:handler name="selectedLookupRemoved" event="c:DN_LookupRemoved_evt" action="{!c.fnHandelRemoved}"/>
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.fnRenderPage}" />
+    <aura:handler name="change" value="{!v.pageNumberParts}" action="{!c.fnRenderPage}" />
+
+    <div class="slds-card">
+        <div class="slds-page-header">
+            <aura:if isTrue="{!v.toggleSpinner}">
+                <lightning:spinner variant="brand" size="medium" />
+            </aura:if>
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                      <span class="slds-icon_container slds-icon-standard-opportunity" title="">
+                           <lightning:icon iconName="{!v.setIconName}" size="small"/>
+                      </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <h1>
+                            <span class="slds-page-header__title slds-align-middle" title="{!v.setHeader}" style="font-size : 16px;">
+                                {!v.setHeader}
+                            </span>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-page-header__col-actions">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <aura:if isTrue="{!v.isAbleClickAddEdit == true}">
+                                <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                                    <lightning:button label="Add/Edit" onclick="{!c.fnClickAddEdit}" variant="neutral"/>
+                                    <aura:set attribute="else">
+                                        <lightning:button label="Cancel" onclick="{!c.fnClickAddEdit}" variant="neutral"/>
+                                        <lightning:button label="Save" onclick="{!c.fnSave}" variant="brand"/>
+                                    </aura:set>
+                                </aura:if>
+                            </aura:if>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <!--Labors-->
+            <article class="slds-card slds-card_boundary">
+                <div class="slds-card__header slds-grid">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <span>Labor</span>
+                            </h2>
+                        </div>
+                        <aura:if isTrue="{!v.isClickedAddEdit}">
+                            <div class="">
+                                <c:ClaimViewDetail_AddModal
+                                        addType="Labor"
+                                        label="Labor Code"
+                                        model="{!v.model}" 
+                                />
+                            </div>
+                        </aura:if>
+                    </header>
+                </div>
+                <div class="slds-card__body slds-card__body_inner">
+                    <lightning:layoutItem size="12" class="slds-p-right_small slds-p-left_small">
+                        <div class="slds-section slds-is-open">
+                            <div aria-hidden="false" class="slds-section__content">
+                                <!-- slds-table_fixed-layout 쓰면 DN_Lookup에서 Layout 깨짐-->
+                                <lightning:recordEditForm objectApiName="LaborCode__c">
+                                    <div class= "custom-dropbox slds-scrollable_x slds-scrollable_y">
+                                    <table aria-multiselectable="false" role="grid" class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_col-bordered cTable">
+                                        <colgroup>
+                                            <col width="5%"/>       <!--No.-->
+                                            <col width="15%"/>      <!--Labor Code-->
+                                            <col width="8%"/>       <!--Labor Group-->
+                                            <col width="8%"/>       <!--Diagram-->
+                                            <col width="20%"/>      <!--Description-->
+                                            <col width="12%"/>      <!--Request Labor Hour-->
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <col width="12%"/>      <!--Approved Labor Hour-->
+                                            </aura:if>
+                                            <col width="20%"/>      <!--Remarks-->
+                                        </colgroup>
+                                        <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">No.</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Labor Code</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Labor Group</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Diagram</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Description</th>
+                                            <th class="slds-cell-wrap" colspan="{!if(v.isAbleToShowAdjusted == true, 2, 1)}" style="text-align:center;">Labor Hour</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Remarks</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="slds-cell-wrap slds-border_left" style="text-align:center;">Request</th>
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <th class="slds-cell-wrap" style="text-align:center;">Adjusted</th>
+                                            </aura:if>
+                                        </tr>
+                                        </thead>
+                                        <tbody style="max-height:5rem;">
+                                        <aura:if isTrue="{!v.pageRecords.length > 0}">
+                                            <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                                                <aura:iteration items="{!v.pageRecords}" var="obj" indexVar="idx">
+                                                    <tr aria-selected="false" class="slds-hint-parent">
+                                                        <td class="nolabel slds-cell-wrap" title="Sequence">
+                                                            {!((v.pageNumber-1) * 5) + idx+1}
+                                                        </td>
+                                                        <td class="nolabel slds-cell-wrap" title="Labor Code">
+                                                            {!obj.fm_LaborCode__c}
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Labor Group">
+                                                            {!obj.fm_LaborGroup__c}
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Diagram">
+                                                            {!obj.fm_Diagram__c}
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Description">
+                                                            {!obj.fm_Description__c}
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Request Labor Hour">
+                                                            {!obj.LaborHour__c}
+                                                        </td>
+                                                        <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                            <td class="slds-cell-wrap" title="Adjusted Labor Hour">
+                                                                {!obj.ApprovedLaborHour__c}
+                                                            </td>
+                                                        </aura:if>
+                                                        <td class="slds-cell-wrap" title="Remarks">
+                                                            {!obj.Remarks__c}
+                                                        </td>
+                                                    </tr>
+                                                </aura:iteration>
+                                                <aura:set attribute="else">
+                                                    <aura:iteration items="{!v.listDataLabor}" var="obj" indexVar="idx">
+                                                        <tr aria-selected="false" class="slds-hint-parent">
+                                                            <td data-label="button" scope="row" data-index="{!idx}">
+                                                                <a onclick="{!c.handleDeleteLabor}" data-record="{!idx}">
+                                                                    <lightning:icon iconName="utility:delete" size="xx-small" alternativeText="Delete"/>
+                                                                    <span class="slds-assistive-text">Delete</span>
+                                                                </a>
+                                                            </td>
+                                                            <td class="nolabel slds-cell-wrap" title="Labor Code">
+                                                                {!obj.fm_LaborCode__c}
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Labor Group">
+                                                                {!obj.fm_LaborGroup__c}
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Diagram">
+                                                                {!obj.fm_Diagram__c}
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Description">
+                                                                {!obj.fm_Description__c}
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Request Labor Hour">
+                                                                <lightning:inputField fieldName="LaborHour__c" value="{!obj.LaborHour__c}" variant="label-hidden" class="{!'LaborCode-RequestHour-' + idx}" onchange="{!c.fnChangeValue}" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, false, true))}"/>
+                                                            </td>
+                                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                                <td class="slds-cell-wrap" title="Adjusted Labor Hour">
+                                                                    <lightning:inputField fieldName="ApprovedLaborHour__c" value="{!obj.ApprovedLaborHour__c}" class="{!'LaborCode-ApprovedHour-' + idx}" onchange="{!c.fnChangeValue}" variant="label-hidden" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, true, false))}"/>
+                                                                </td>
+                                                            </aura:if>
+                                                            <td class="slds-cell-wrap" title="Remarks">
+                                                                <lightning:inputField fieldName="Remarks__c" value="{!obj.Remarks__c}" variant="label-hidden"/>
+                                                            </td>
+                                                        </tr>
+                                                    </aura:iteration>
+                                                </aura:set>
+                                            </aura:if>
+                                            <aura:set attribute="else">
+                                                <tr>
+                                                    <td colspan="11" style="height:5rem; text-align:center">
+                                                        There is nothing to display.
+                                                    </td>
+                                                </tr>
+                                            </aura:set>
+                                        </aura:if>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                    <aura:if isTrue="{!if(!v.isClickedAddEdit == false, false, v.total > 5)}">
+                                        <div class="slds-col slds-align_absolute-center slds-p-top_medium">
+                                            <c:DN_Paging currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.maxPage}" />
+                                        </div>
+                                    </aura:if>
+                                </lightning:recordEditForm>
+                            </div>
+                        </div>
+                    </lightning:layoutItem>
+                    <aura:if isTrue="{!v.isClickedAddEdit}">
+                        <!--<footer class="slds-modal__footer" >
+                            <div class="slds-grid slds-gutters slds-grid_align-end">
+                                <div class="slds-col slds-grid_vertical-align-center">
+                                    <span>Total Amount</span>
+                                </div>
+                                <div class="slds-grid slds-gutters slds-grid_vertical">
+                                    <div class="slds-col">
+                                        <span>Request  : <b><lightning:formattedNumber value="{!v.TotalRequestLaborCost}" style="currency" currencyCode="USD"/></b></span>
+                                    </div>
+                                    <div class="slds-col">
+                                        <span>Approved : <b><lightning:formattedNumber value="{!v.TotalApprovedLaborCost}" style="currency" currencyCode="USD"/></b></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </footer>-->
+                        <div style="display:flex; flex-direction:row-reverse; padding-top:0.5rem">
+                            <div style="width:22rem">
+                                <article style="width:100%" class="slds-card slds-card_boundary slds-size_4-of-12 slds-color__background_gray-3">
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-col slds-size_1-of-2">Request :</div>
+                                            <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!v.TotalRequestLaborCost}" style="currency" currencyCode="USD"/></b></div>
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <div class="slds-col slds-size_1-of-2">Adjusted :</div>
+                                                <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!v.TotalApprovedLaborCost}" style="currency" currencyCode="USD"/></b></div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </aura:if>
+                </div>
+            </article>
+            <!--Parts-->
+            <article class="slds-card slds-card_boundary">
+                <div class="slds-card__header slds-grid">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <span>Parts</span>
+                            </h2>
+                        </div>
+                        <aura:if isTrue="{!v.isClickedAddEdit}">
+                            <div class="">
+                                <lightning:button label="Add" onclick="{!c.fnAddParts}" variant="neutral"/>
+                            </div>
+                        </aura:if>
+                    </header>
+                </div>
+                <div class="slds-card__body slds-card__body_inner scroll-setting">
+                    <lightning:layoutItem size="12" class="slds-p-right_small slds-p-left_small">
+                        <div class="slds-section slds-is-open">
+                            <div aria-hidden="false" class="slds-section__content">
+                                <!-- slds-table_fixed-layout 쓰면 DN_Lookup에서 Layout 깨짐-->
+                                <lightning:recordEditForm objectApiName="Parts__c">
+                                    <div class= "custom-dropbox slds-scrollable_x slds-scrollable_y">
+                                    <table  aria-multiselectable="false" role="grid" class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_col-bordered cTable" >
+                                        <colgroup>
+                                            <col width="5%"/>       <!--No.-->
+                                            <col width="5%"/>       <!--LP-->
+                                            <col width="10%"/>       <!--Causal Part-->
+                                            <col width="18%"/>      <!--Parts No.-->
+                                            <col width="20%"/>      <!--Description-->
+                                            <col width="10%"/>      <!--Request Quantity-->
+                                            <col width="10%"/>      <!--Request Amount-->
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <col width="10%"/>      <!--Approved Quantity-->
+                                                <col width="12%"/>      <!--Approved Amount-->
+                                            </aura:if>
+                                        </colgroup>
+                                        <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">No.</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">LP</th> 
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Causal Part</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Parts No.</th>
+                                            <th class="slds-cell-wrap" rowspan="2" style="text-align:center;">Invoice Number/Description</th>
+                                            <th class="slds-cell-wrap" colspan="2" style="text-align:center;">Request</th>
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <th class="slds-cell-wrap" colspan="2" style="text-align:center;">Adjusted</th>
+                                            </aura:if>
+                                        </tr>
+                                        <tr>
+                                            <th class="slds-cell-wrap slds-border_left" style="text-align:center;">Quantity</th>
+                                            <th class="slds-cell-wrap" style="text-align:center;">Amount</th>
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <th class="slds-cell-wrap slds-border_left" style="text-align:center;">Quantity</th>
+                                                <th class="slds-cell-wrap" style="text-align:center;">Amount</th>
+                                            </aura:if>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <aura:if isTrue="{!v.pageRecordParts.length > 0}">
+                                            <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                                                <!--Default-->
+                                                <aura:iteration items="{!v.pageRecordParts}" var="obj" indexVar="idx">
+                                                    <tr aria-selected="false" class="slds-hint-parent">
+                                                        <td class="nolabel slds-cell-wrap" title="Sequence">
+                                                            {!((v.pageNumberParts-1) * 5) + idx+1}
+                                                        </td>
+                                                        <td tdata-label="checkbox" scope="row" data-index="{!index}">
+                                                            <lightning:input type="checkbox"
+                                                                             value="{!obj.LP__c}"
+                                                                             checked="{!if(obj.LP__c, 'checked', false)}"
+                                                                             disabled="true"/>
+
+                                                        </td>
+                                                        <td data-label="checkbox" scope="row" data-index="{!index}">
+                                                            <lightning:input type="checkbox"
+                                                                             value="{!obj.CausalPart__c}"
+                                                                             checked="{!if(obj.CausalPart__c, 'checked', false)}"
+                                                                             disabled="true"/>
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Parts No">
+                                                            <aura:if isTrue="{!obj.LP__c}">
+                                                                {!obj.LocalParts__c}
+                                                                <aura:set attribute="else">
+                                                                    {!obj.fm_PartsNo__c}
+                                                                </aura:set>
+                                                            </aura:if>
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Invoice Number/Description">
+                                                            <aura:if isTrue="{!obj.LP__c}">
+                                                                {!obj.LocalParts__c}
+                                                                <aura:set attribute="else">
+                                                                    <aura:if isTrue="{!obj.InvoiceNumber}">
+                                                                        {!obj.InvoiceNumber}
+                                                                        <aura:set attribute="else">
+                                                                            {!obj.fm_PartsName__c}
+                                                                        </aura:set>
+                                                                    </aura:if>
+                                                                </aura:set>
+                                                            </aura:if>
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Request Quantity">
+                                                            {!obj.Quantity__c}
+                                                        </td>
+                                                        <td class="slds-cell-wrap" title="Request Parts Value">
+                                                            <lightning:formattedNumber style="currency" currencyCode="USD" step=".01" value="{!obj.PartValue__c}" />
+                                                        </td>
+                                                        <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                            <td class="slds-cell-wrap" title="Adjusted Quantity">
+                                                                {!obj.ApprovedQuantity__c}
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Adjusted Parts Value">
+                                                                <lightning:formattedNumber style="currency" currencyCode="USD" step=".01" value="{!if(obj.ApprovedPartValue__c != undefined, obj.ApprovedPartValue__c, 0)}" />
+                                                            </td>
+                                                        </aura:if>
+                                                    </tr>
+                                                </aura:iteration>
+                                                <!--Add/Edit-->
+                                                <aura:set attribute="else">
+                                                    <aura:iteration items="{!v.listDataParts}" var="obj" indexVar="idx">
+                                                        <tr aria-selected="false" class="slds-hint-parent">
+                                                            <td class="slds-cell-wrap" data-label="button" scope="row" data-index="{!idx}">
+                                                                <a onclick="{!c.handleDeleteParts}" data-record="{!idx}">
+                                                                    <lightning:icon iconName="utility:delete" size="xx-small" alternativeText="Delete"/>
+                                                                    <span class="slds-assistive-text">Delete</span>
+                                                                </a>
+                                                            </td>
+                                                            <td data-label="checkbox" scope="row" data-index="{!idx}">
+                                                                <lightning:input type="checkbox"
+                                                                                 value="{!obj.LP__c}"
+                                                                                 checked="{!if(obj.LP__c, 'checked', false)}"
+                                                                                 multiple="false"
+                                                                                 accesskey="{!idx}"
+                                                                                 class="LP"
+                                                                                 onchange="{!c.handlerCheck}"
+                                                                                 disabled="{!if(obj.Id != null || obj.LP__c == true, true, false)}"
+                                                                />
+                                                            </td>
+                                                            <td data-label="checkbox" scope="row" data-index="{!idx}">
+                                                                <lightning:input type="checkbox"
+                                                                                 value="{!obj.CausalPart__c}"
+                                                                                 checked="{!if(obj.CausalPart__c, 'checked', false)}"
+                                                                                 multiple="false"
+                                                                                 accesskey="{!idx}"
+                                                                                 class="CausalPart"
+                                                                                 onchange="{!c.handlerCheck}"
+                                                                                 disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, false, true))}"
+                                                                />
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Parts No" data-index="{!idx}">
+                                                                <aura:if isTrue="{!obj.LP__c}">
+                                                                    <lightning:inputField fieldName="LocalParts__c" value="{!obj.LocalParts__c}" variant="label-hidden" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, false, true))}"/>
+                                                                    <aura:set attribute="else"> 
+                                                                        <!--<c:DN_Lookup 	aura:id="Lightning1"
+                                                                                        uniqueLookupIdentifier="{!'PricebookEntry-' + idx}"
+                                                                                        objectName="Product2"
+                                                                                        fieldSet="['Name','ProductCode']"
+                                                                                        whereCondition="{!' IsActive = true AND ItemGroupCode__c = \'119\' '}"
+                                                                                        limit="10000"
+                                                                                        comparisonField="['Name','ProductCode']"
+                                                                                        primaryDisplayField="ProductCode"
+                                                                                        alternateDisplayField="['Name','ProductCode']"
+                                                                                        minimumCharacter="2"
+                                                                                        lightningIconName="standard:product"
+                                                                                        selectedId="{!obj.ProductId__c}"
+                                                                                        selectedLabel="{!obj.ProductCode}"
+                                                                                        compact="true"
+                                                                                        readOnly="{!if(obj.Id != null, true, false)}"
+                                                                        />-->
+                                                                        <!--<lightning:inputField accesskey="{!idx}" fieldName="ProductId__c" value="{!obj.ProductId__c}" variant="label-hidden" disabled="{!if(obj.Id != null, true, false)}" onchange="{!c.fnChangeParts}"/>-->
+                                                                        <lightning:inputField accesskey="{!idx}" fieldName="ProductId__c" value="{!obj.ProductId__c}" variant="label-hidden" onchange="{!c.fnChangeParts}"/>
+                                                                    </aura:set>
+                                                                </aura:if>
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Description">
+                                                                <aura:if isTrue="{!obj.LP__c}">
+                                                                    {!obj.LocalParts__c}
+                                                                    <aura:set attribute="else">
+                                                                        <aura:if isTrue="{!obj.hasInvoice}">
+                                                                            <lightning:select name="InvoiceNumber" variant="label-hidden" value="{!obj.InvoiceNumber}" class="{!'ARInvoice-'+ obj.ProductId__c + '-' + idx}" label="none" onchange="{!c.handleChangeInvoice}">
+                                                                                <aura:iteration items="{!obj.listARInvoice}" var="keys">
+                                                                                    <option text="{!keys.labelName}" value="{!keys.value}"></option>
+                                                                                </aura:iteration>
+                                                                            </lightning:select>
+                                                                            <!--<aura:if isTrue="{!if(obj.Id == null, true, false)}">
+                                                                                <lightning:select name="InvoiceNumber" variant="label-hidden" value="{!obj.InvoiceNumber}" class="{!'ARInvoice-'+ obj.ProductId__c + '-' + idx}" label="none" onchange="{!c.handleChangeInvoice}">
+                                                                                    <aura:iteration items="{!obj.listARInvoice}" var="keys">
+                                                                                        <option text="{!keys.labelName}" value="{!keys.value}"></option>
+                                                                                    </aura:iteration>
+                                                                                </lightning:select>
+                                                                                <aura:set attribute="else">
+                                                                                    {!obj.InvoiceNumber}
+                                                                                </aura:set>
+                                                                            </aura:if>-->
+                                                                            <aura:set attribute="else">
+                                                                                {!obj.fm_PartsName__c}
+                                                                            </aura:set>
+                                                                        </aura:if>
+                                                                    </aura:set>
+                                                                </aura:if>
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Request Quantity">
+                                                                <lightning:inputField fieldName="Quantity__c" value="{!obj.Quantity__c}" variant="label-hidden" class="{!'Parts-RequestQuantity-' + idx}" onchange="{!c.fnChangeValue}" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, false, true))}"/>
+                                                            </td>
+                                                            <td class="slds-cell-wrap" title="Request Parts Value">
+                                                                <aura:if isTrue="{!obj.LP__c}">
+                                                                    <lightning:inputField fieldName="PartValue__c" value="{!obj.PartValue__c}" variant="label-hidden" class="{!'Parts-RequestAmount-' + idx}" onchange="{!c.fnChangeValue}" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, false, true))}"/>
+                                                                    <aura:set attribute="else">
+                                                                        <lightning:formattedNumber style="currency" currencyCode="USD" step=".01" value="{!obj.PartValue__c}" />
+                                                                    </aura:set>
+                                                                </aura:if>
+                                                            </td>
+                                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                                <td class="slds-cell-wrap" title="Adjusted Quantity">
+                                                                    <lightning:inputField fieldName="ApprovedQuantity__c" value="{!obj.ApprovedQuantity__c}" variant="label-hidden" class="{!'Parts-ApprovedQuantity-' + idx}" onchange="{!c.fnChangeValue}" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, true, false))}"/>
+                                                                </td>
+                                                                <td class="slds-cell-wrap" title="Adjusted Parts Value">
+                                                                    <lightning:inputField fieldName="ApprovedPartValue__c" value="{!obj.ApprovedPartValue__c}" variant="label-hidden" class="{!'Parts-ApprovedAmount-' + idx}" onchange="{!c.fnChangeValue}" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, true, false))}"/>
+                                                                </td>
+                                                            </aura:if>
+                                                        </tr>
+                                                    </aura:iteration>
+                                                </aura:set>
+                                            </aura:if>
+                                            <aura:set attribute="else">
+                                                <tr>
+                                                    <td colspan="11" style="height:5rem; text-align:center">
+                                                        There is nothing to display.
+                                                    </td>
+                                                </tr>
+                                            </aura:set>
+                                        </aura:if>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                    <aura:if isTrue="{!if(!v.isClickedAddEdit == false, false, v.totalParts > 5)}">
+                                        <div class="slds-col slds-align_absolute-center slds-p-top_medium">
+                                            <c:DN_Paging currentPageNumber="{!v.pageNumberParts}" maxPageNumber="{!v.maxPageParts}" />
+                                        </div>
+                                    </aura:if>
+                                </lightning:recordEditForm>
+                            </div>
+                        </div>
+                    </lightning:layoutItem>
+                    <aura:if isTrue="{!v.isClickedAddEdit == true}">
+                        <!--<footer class="slds-modal__footer" >
+                            <div class="slds-grid slds-gutters slds-grid_align-end">
+                                <div class="slds-col slds-grid_vertical-align-center">
+                                    <span>Total Amount</span>
+                                </div>
+                                <div class="slds-grid slds-gutters slds-grid_vertical">
+                                    <div class="slds-col">
+                                        <span>Request  : <b><lightning:formattedNumber value="{!v.TotalRequestPartsValue}" style="currency" currencyCode="USD"/></b></span>
+                                    </div>
+                                    <div class="slds-col">
+                                        <span>Approved : <b><lightning:formattedNumber value="{!v.TotalApprovedPartsValue}" style="currency" currencyCode="USD"/></b></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </footer>-->
+                        <div style="display:flex; flex-direction:row-reverse; padding-top:0.5rem">
+                            <div style="width:22rem">
+                                <article style="width:100%" class="slds-card slds-card_boundary slds-size_4-of-12 slds-color__background_gray-3">
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-col slds-size_1-of-2">Request :</div>
+                                            <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!v.TotalRequestPartsValue}" style="currency" currencyCode="USD"/></b></div>
+                                            <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                                                <div class="slds-col slds-size_1-of-2">Adjusted :</div>
+                                                <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!v.TotalApprovedPartsValue}" style="currency" currencyCode="USD"/></b></div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </aura:if>
+                </div>
+            </article>
+            <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                <div style="display:flex; flex-direction:row-reverse; padding-top:0.5rem" class="slds-form-element_horizontal">
+                    <aura:if isTrue="{!if(v.isAbleToShowAdjusted == true, true, false)}">
+                        <div style="width:22rem; margin-left:0.5rem">
+                            <article style="width:100%" class="slds-card slds-card_boundary slds-size_4-of-12 slds-color__background_gray-3">
+                                <div class="slds-card__body slds-card__body_inner">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_2-of-2" style="padding-bottom:0.5rem"><b>Adjusted</b></div>
+                                        <div class="slds-col slds-size_1-of-2">Labor :</div>
+                                        <div class="slds-col slds-size_1-of-2"><lightning:formattedNumber value="{!v.objClaim.ru_TotalApprovedLaborCost__c}" style="currency" currencyCode="USD"/></div>
+                                        <div class="slds-col slds-size_1-of-2">Parts :</div>
+                                        <div class="slds-col slds-size_1-of-2"><lightning:formattedNumber value="{!v.objClaim.ru_TotalApprovedPartsAmount__c + v.objClaim.ru_TotalApprovedShipping__c + v.objClaim.ru_TotalApprovedOthers__c}" style="currency" currencyCode="USD"/></div>
+                                    </div>
+                                </div>
+                                <footer class="slds-card__footer slds-text-align_left">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-2"><b>Total :</b></div>
+                                        <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!v.objClaim.fm_TotalApprovedAmount__c}" style="currency" currencyCode="USD"/></b></div>
+                                    </div>
+                                </footer>
+                            </article>
+                        </div>
+                    </aura:if>
+                    <div style="width:22rem">
+                        <article style="width:100%" class="slds-card slds-card_boundary slds-size_4-of-12 slds-color__background_gray-3">
+                            <div class="slds-card__body slds-card__body_inner">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_2-of-2" style="padding-bottom:0.5rem"><b>Request</b></div>
+                                    <div class="slds-col slds-size_1-of-2">Labor :</div>
+                                    <div class="slds-col slds-size_1-of-2"><lightning:formattedNumber value="{!v.objClaim.ru_TotalRequestLaborCost__c}" style="currency" currencyCode="USD"/></div>
+                                    <div class="slds-col slds-size_1-of-2">Parts :</div>
+                                    <div class="slds-col slds-size_1-of-2"><lightning:formattedNumber value="{!v.objClaim.ru_PartsTotal__c + v.objClaim.ru_TotalRequestShippnig__c + v.objClaim.ru_TotalRequestOthers__c}" style="currency" currencyCode="USD"/></div>
+                                </div>
+                            </div>
+                            <footer class="slds-card__footer slds-text-align_left">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_1-of-2"><b>Total :</b></div>
+                                    <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!v.objClaim.fm_TotalRequestAmount__c}" style="currency" currencyCode="USD"/></b></div>
+                                </div>
+                            </footer>
+                        </article>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

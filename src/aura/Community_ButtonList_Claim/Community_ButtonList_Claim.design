@@ -1,0 +1,7 @@
+<!--
+ - Created by 천유정 on 2023-11-08.
+ -->
+
+<design:component>
+    <design:attribute name="recordId" label="recordId" description="Salesforce Id of the record" />
+</design:component>

@@ -1,0 +1,291 @@
+<!------------------------------------------------------------
+ * @author : th.kim
+ * @date : 2023-10-11
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver Date Author Modification
+ 1.0    Initial Version
+-------------------------------------------------------------->
+<!-- Tym Claim Rich Text Photo -->
+
+<template>
+<!--    tab style-->
+<!--    &lt;!&ndash; tab style start &ndash;&gt;-->
+<!--    <lightning-tabset>-->
+<!--        <lightning-tab label="Upload">-->
+<!--            <div class="slds-size_1-of-1 slds-p-bottom_small">-->
+<!--                <lightning-card>-->
+<!--                    <lightning-card  title="Photo of Hour Meter">-->
+<!--                        <div class="slds-p-around_medium">-->
+<!--                            <lightning-input type="file" label="Photo of Hour Meter" onchange={onFileUpload}></lightning-input>-->
+<!--                            <p>{fileData1.fileName}</p>-->
+<!--                        </div>-->
+<!--                    </lightning-card>-->
+<!--                    <lightning-card  title="Photo of Serial Number">-->
+<!--                        <div class="slds-p-around_medium">-->
+<!--                            <lightning-input type="file" label="Photo of Serial Number" onchange={onFileUpload}></lightning-input>-->
+<!--                            <p>{fileData2.fileName}</p>-->
+<!--                        </div>-->
+<!--                    </lightning-card>-->
+<!--                    <lightning-card  title="Photo of Tractor during repair">-->
+<!--                        <div class="slds-p-around_medium">-->
+<!--                            <lightning-input type="file" label="Photo of Tractor during repair" onchange={onFileUpload}></lightning-input>-->
+<!--                            <p>{fileData3.fileName}</p>-->
+<!--                        </div>-->
+<!--                    </lightning-card>-->
+<!--                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">-->
+<!--                        <lightning-button variant="brand" label="Save" title="Save" onclick={onUploadClick}></lightning-button>-->
+<!--                    </div>-->
+<!--                </lightning-card>-->
+<!--            </div>-->
+<!--            &lt;!&ndash; 로딩 스피너 &ndash;&gt;-->
+<!--            <template if:true={isLoading}>-->
+<!--                <div class="spinner">-->
+<!--                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>-->
+<!--                </div>-->
+<!--            </template>-->
+<!--        </lightning-tab>-->
+<!--        <lightning-tab label="File">-->
+<!--            <lightning-card>-->
+<!--                <lightning-card  title="Photo of Hour Meter">-->
+<!--                    <div class="slds-p-horizontal_medium">-->
+<!--                        <div class="slds-grid slds-wrap">-->
+<!--                            <div class="slds-size_1-of-6 img-box">-->
+<!--                                <p class="slds-truncate">{Photo_of_Hour_Meter.name}</p>-->
+<!--                                <img src={Photo_of_Hour_Meter.url} alt={Photo_of_Hour_Meter.name}>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </lightning-card>-->
+<!--                <lightning-card  title="Photo of Serial Number">-->
+<!--                    <div class="slds-p-horizontal_medium">-->
+<!--                        <div class="slds-grid slds-wrap">-->
+<!--                            <div class="slds-size_1-of-6 img-box">-->
+<!--                                <p class="slds-truncate">{Photo_of_Serial_Number.name}</p>-->
+<!--                                <img src={Photo_of_Serial_Number.url} alt={Photo_of_Serial_Number.name}>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </lightning-card>-->
+<!--                <lightning-card  title="Photo of Tractor during repair">-->
+<!--                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">-->
+<!--                        <div class="slds-grid slds-wrap">-->
+<!--                            <div class="slds-size_1-of-6 img-box">-->
+<!--                                <p class="slds-truncate">{Photo_of_Tractor_during_repair.name}</p>-->
+<!--                                <img src={Photo_of_Tractor_during_repair.url} alt={Photo_of_Tractor_during_repair.name}>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </lightning-card>-->
+<!--            </lightning-card>-->
+<!--        </lightning-tab>-->
+<!--    </lightning-tabset>-->
+<!--    &lt;!&ndash; tab style end &ndash;&gt;-->
+
+    <!-- half style -->
+    <!-- half style start -->
+    <div class="slds-grid slds-wrap slds-size_1-of-1">
+        <div class="slds-size_1-of-2 slds-p-bottom_small">
+            <lightning-card>
+                <lightning-card  title="Photo of Hour Meter">
+                    <div class="slds-p-around_medium">
+                        <template lwc:if={isEditable}>
+                            <lightning-input type="file" label="Photo of Hour Meter" onchange={onFileUpload}></lightning-input>
+                        </template>
+                        <template lwc:else>
+                            <lightning-input type="file" label="Photo of Hour Meter" onchange={onFileUpload} disabled></lightning-input>
+                        </template>
+                        <template for:each={fileData1} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Photo of Tractor during repair" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Photo of Serial Number">
+                    <div class="slds-p-around_medium">
+                        <template lwc:if={isEditable}>
+                            <lightning-input type="file" label="Photo of Serial Number" onchange={onFileUpload}></lightning-input>
+                        </template>
+                        <template lwc:else>
+                            <lightning-input type="file" label="Photo of Serial Number" onchange={onFileUpload} disabled></lightning-input>
+                        </template>
+                        <template for:each={fileData2} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Photo of Tractor during repair" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Photo of Tractor During Repair">
+                    <div class="slds-p-around_medium">
+                        <template lwc:if={isEditable}>
+                            <lightning-input type="file" label="Photo of Tractor during repair" onchange={onFileUpload} multiple="true"></lightning-input>
+                        </template>
+                        <template lwc:else>
+                            <lightning-input type="file" label="Photo of Tractor during repair" onchange={onFileUpload} multiple="true" disabled></lightning-input>
+                        </template>
+                        <template for:each={fileData3} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Photo of Tractor during repair" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card title="Photo of Failure Part">
+                    <div class="slds-p-around_medium">
+                        <template lwc:if={isEditable}>
+                            <lightning-input type="file" label="Photo of failure part" onchange={onFileUpload} multiple="true"></lightning-input>
+                        </template>
+                        <template lwc:else>
+                            <lightning-input type="file" label="Photo of failure part" onchange={onFileUpload} multiple="true" disabled></lightning-input>
+                        </template>
+                        <template for:each={fileData4} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Photo of failure part" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <template lwc:if={isEditable}>
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <lightning-button variant="brand" label="Save" title="Save" onclick={onUploadClick}></lightning-button>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <lightning-button variant="brand" label="Save" title="Save" onclick={onUploadClick} disabled></lightning-button>
+                    </div>
+                </template>
+                <!-- 로딩 스피너 -->
+                <template if:true={isLoading}>
+                    <div class="spinner">
+                        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                    </div>
+                </template>
+            </lightning-card>
+        </div>
+        <div class="slds-size_1-of-2">
+            <lightning-card>
+                <lightning-card  title="Photo of Hour Meter">
+                    <div class="slds-p-horizontal_medium">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-1 slds-p-horizontal_x-small img-box">
+                                <p class="slds-truncate">{Photo_of_Hour_Meter.name}</p>
+                                <img src={Photo_of_Hour_Meter.url} alt={Photo_of_Hour_Meter.name}>
+                            </div>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Photo of Serial Number">
+                    <div class="slds-p-horizontal_medium">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-1 slds-p-horizontal_x-small img-box">
+                                <p class="slds-truncate">{Photo_of_Serial_Number.name}</p>
+                                <img src={Photo_of_Serial_Number.url} alt={Photo_of_Serial_Number.name}>
+                            </div>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Photo of Tractor During Repair">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={Photo_of_Tractor_during_repair} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Photo of Failure Part">
+                    <div class="slds-p-horizontal_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={Photo_of_failure_part} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+            </lightning-card>
+        </div>
+    </div>
+    <!-- half style end -->
+
+<!--    full style-->
+<!--    &lt;!&ndash; full stlye start &ndash;&gt;-->
+<!--    <div class="slds-size_1-of-1 slds-p-bottom_small">-->
+<!--        <lightning-card>-->
+<!--            <lightning-card  title="Photo of Hour Meter">-->
+<!--                <div class="slds-p-around_medium lgc-bg">-->
+<!--                    <lightning-input type="file" label="Photo of Hour Meter"  onchange={onFileUpload}></lightning-input>-->
+<!--                    <p>{fileData1.fileName}</p>-->
+<!--                </div>-->
+<!--            </lightning-card>-->
+<!--            <lightning-card  title="Photo of Serial Number">-->
+<!--                <div class="slds-p-around_medium lgc-bg">-->
+<!--                    <lightning-input type="file" label="Photo of Serial Number"  onchange={onFileUpload}></lightning-input>-->
+<!--                    <p>{fileData2.fileName}</p>-->
+<!--                </div>-->
+<!--            </lightning-card>-->
+<!--            <lightning-card  title="Photo of Tractor during repair">-->
+<!--                <div class="slds-p-around_medium lgc-bg">-->
+<!--                    <lightning-input type="file" label="Photo of Tractor during repair"  onchange={onFileUpload}></lightning-input>-->
+<!--                    <p>{fileData3.fileName}</p>-->
+<!--                </div>-->
+<!--            </lightning-card>-->
+<!--            <lightning-button class="slds-p-left_medium" variant="brand" label="Save" title="Save" onclick={onUploadClick}></lightning-button>-->
+<!--            &lt;!&ndash; 로딩 스피너 &ndash;&gt;-->
+<!--            <template if:true={isLoading}>-->
+<!--                <div class="spinner">-->
+<!--                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>-->
+<!--                </div>-->
+<!--            </template>-->
+<!--        </lightning-card>-->
+<!--    </div>-->
+<!--    <div class="slds-size_1-of-1">-->
+<!--        <lightning-card>-->
+<!--            <lightning-card  title="Photo of Hour Meter">-->
+<!--                <div class="slds-p-horizontal_medium">-->
+<!--                    <div class="slds-grid slds-wrap">-->
+<!--                        <div class="slds-size_1-of-6 img-box">-->
+<!--                            <p class="slds-truncate">{Photo_of_Hour_Meter.name}</p>-->
+<!--                            <img src={Photo_of_Hour_Meter.url} alt={Photo_of_Hour_Meter.name}>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </lightning-card>-->
+<!--            <lightning-card  title="Photo of Serial Number">-->
+<!--                <div class="slds-p-horizontal_medium">-->
+<!--                    <div class="slds-grid slds-wrap">-->
+<!--                        <div class="slds-size_1-of-6 img-box">-->
+<!--                            <p class="slds-truncate">{Photo_of_Serial_Number.name}</p>-->
+<!--                            <img src={Photo_of_Serial_Number.url} alt={Photo_of_Serial_Number.name}>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </lightning-card>-->
+<!--            <lightning-card  title="Photo of Tractor during repair">-->
+<!--                <div class="slds-p-horizontal_medium slds-p-bottom_medium">-->
+<!--                    <div class="slds-grid slds-wrap">-->
+<!--                        <div class="slds-size_1-of-6 img-box">-->
+<!--                            <p class="slds-truncate">{Photo_of_Tractor_during_repair.name}</p>-->
+<!--                            <img src={Photo_of_Tractor_during_repair.url} alt={Photo_of_Tractor_during_repair.name}>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </lightning-card>-->
+<!--        </lightning-card>-->
+<!--    </div>-->
+<!--    &lt;!&ndash; full stlye end &ndash;&gt;-->
+</template>

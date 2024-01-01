@@ -1,0 +1,497 @@
+<template>
+
+
+    <template if:true={isSelectedRebate}>
+
+            <lightning-card title="Eligibilities By Model" icon-name="standard:campaign">
+                
+                <div class="slds-size_1-of-1 slds-p-around_x-small p-box">            
+                    <lightning-combobox 
+                        class="slds-size_3-of-5"
+                        name="itemSelect" 
+                        label="Item Group List" 
+                        value={selectedItemValue} 
+                        options={itemGroupCodes} 
+                        onchange={handleItemGroupChange}>
+                    </lightning-combobox>
+                </div>
+
+                
+                <template if:true={isSelectedItems}>
+                    <template if:true={isFlatRate}>
+                        <div class="slds-size_8-of-12 slds-truncate slds-p-around_x-small" style="display: flex; align-items: center; margin-left: auto;">
+                            <lightning-input 
+                                class="discountClass" name="discount" value={newDiscountVal} onchange={handleDiscountAllChange} placeholder="Please enter a value" variant="label-hidden">
+                            </lightning-input>
+                            <button class="slds-button slds-button_neutral" onclick={onClickDiscountAll}>Discount</button>
+                        </div>
+                        <div class="slds-FlateRate slds-p-around_small" >
+                            <div style="height: 200px; overflow-y: scroll; display: flex; flex-direction: column;">
+                                <table class="slds-table slds-size_1-of-1 slds-table_bordered slds-table_striped">
+                                    <thead>
+                                        <tr>
+                                            <th data-label="Product Name" class="slds-size_3-of-8" scope="col">
+                                                <div class="slds-size_1-of-1 slds-truncate" title="Product">
+                                                    Model
+                                                </div>
+                                            </th>
+                                            <th data-label="Discount" class="slds-size_3-of-8" scope="col">
+                                                <div class="slds-size_1-of-1 slds-truncate" title="Discount">
+                                                    Discount
+                                                </div>
+                                            </th>
+                                            <th class="slds-size_2-of-8" scope="col">
+                                                <div class="slds-size_1-of-1 slds-truncate" title="Action">Action</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                        
+                                    <tbody>
+                                        <template for:each={returnList} for:item="code" for:index="index">
+                                            <tr key={code.Id} data-value={code.Id} data-id={code.Id}>
+                                                <td>
+                                                    <div class="slds-size_1-of-1 slds-truncate" style="max-width: 128px;">{code.name}</div>
+                                                </td>
+                                                <td>
+                                                    <div class="slds-size_1-of-1 slds-truncate slds-text-align_center slds-grid">
+                                                        <lightning-input class="discountClass" name="Discount" data-id={code.rpmitemList.Id} data-idx={index}
+                                                            value={code.rpmitemList.Discount__c} onchange={handleNumberChange} variant="label-hidden">
+                                                        </lightning-input>
+                                                        <div class="slds-p-left_xx-small" style="font-size: 15px; font-weight: 400; align-self: center;">%</div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <lightning-button-icon icon-name="utility:delete"
+                                                        data-id={code.rpmitemList.Id}
+                                                        data-idx={index}
+                                                        alternative-text="Delete"     
+                                                        class="slds-m-left_xx-small"
+                                                        onclick={removeRow} 
+                                                        title="Delete">
+                                                    </lightning-button-icon>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                                <template if:true={isLoading}>
+                                    <div class="slds-spinner_container">
+                                        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                    </div>
+                                </template>
+
+                                <template if:true={isNonPick}>
+                                    <div class="slds-p-around_small">No value selected. Click on the Add Model</div>
+                                </template>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="slds-form-element slds-size_5-of-5 slds-grid">
+                            <div class="slds-form-element slds-size_3-of-5">
+                                <label class="slds-form-element__label" for="combobox-id-63" id="combobox-label-id-137">+ Add Model</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-combobox_container">
+                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click">
+                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none" data-toggle="dropdown">
+                                                <div role="combobox" tabindex="0" class="slds-input_faux slds-combobox__input" onclick={comboboxAct} aria-labelledby="combobox-label-id-137 combobox-id-63-selected-value" id="combobox-id-63-selected-value" aria-controls="listbox-id-33" aria-expanded="false" aria-haspopup="listbox">
+                                                    <span class="slds-truncate" id="combobox-value-id-103">Add Model </span>
+                                                </div>
+                                                <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right">
+                                                    <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"></svg>
+                                                </span>
+                                            </div>
+                                            <div role="listbox" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid">
+                                                <div role="option">
+                                                    <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                        <template for:each={optionList} for:item="code" for:index="index">
+                                                            <li key={code.Id} data-value={code.Id} data-id={code.rpmitemList.Id} data-idx={index} onclick={selectItem} role="option" class="slds-listbox__item">
+                                                                <div data-id={code.rpmitemList.Id} data-idx={index} class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option">
+                                                                    {code.label}
+                                                                </div>
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-size_2-of-5 slds-p-left_medium">
+                                <label class="slds-form-element__label slds-size_1-of-1">Add Model Btn </label>
+                                <button class="slds-button slds-button_neutral" onclick={onClickSaveAll}>Add All</button>
+                                <button class="slds-button slds-button_destructive" onclick={onClickDeleteAll}>Delete All</button>
+                            </div>
+
+                        </div>
+
+                        <div class="slds-size_1-of-1 slds-p-top_medium">
+                            <button class="slds-button slds-button_neutral" onclick={onClickSave}>Save</button>
+                            <button class="slds-button slds-button_destructive" onclick={onClickReset}>Reset</button>
+                        </div>
+
+                    </template>
+
+                    <template if:true={isVariableAmount}>
+                        <div class="slds-p-around_small">
+                            <div class="slds-size_8-of-12 slds-truncate slds-p-around_x-small" style="display: flex; align-items: center; margin-left: auto;">
+                                <lightning-input 
+                                    class="amountClass" name="amount" value={newAmountVal} onchange={handleAmountAllChange} placeholder="Please enter a value" variant="label-hidden">
+                                </lightning-input>
+                                <button class="slds-button slds-button_neutral" onclick={onClickAmountAll}>Amount</button>
+                            </div>
+                            <div style="height: 200px; overflow-y: scroll; display: flex; flex-direction: column;">
+                                <table class="slds-table slds-size_1-of-1 slds-table_bordered slds-table_striped">
+                                    <thead>
+                                        <tr>
+                                            <th data-label="Product Name" class="slds-size_3-of-8" scope="col">
+                                                <div class="slds-size_1-of-1 slds-truncate" title="Product">
+                                                    Model
+                                                </div>
+                                            </th>
+                                            <th data-label="Amount" class="slds-size_3-of-8" scope="col">
+                                                <div class="slds-size_1-of-1 slds-truncate" title="Amount">
+                                                    Amount
+                                                </div>
+                                            </th>
+                                            <th class="slds-size_2-of-8" scope="col">
+                                                <div class="slds-size_1-of-1 slds-truncate" title="Action">Action</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={returnList} for:item="code" for:index="index">
+                                            <tr key={code.Id} data-value={code.Id} data-id={code.Id}>
+                                                <td class="slds-size_3-of-8">
+                                                    <div class="slds-size_1-of-1 slds-truncate" style="max-width: 128px;">{code.name}</div>
+                                                </td>
+                                                <td class="slds-size_3-of-8">
+                                                    <div class="slds-size_1-of-1 slds-text-align_center">
+                                                        <lightning-input class="discountClass" name="Amount" data-idx={index} data-id={code.rpmitemList.Id}
+                                                            value={code.rpmitemList.Amount__c} onchange={handleNumberChange} variant="label-hidden">
+                                                        </lightning-input>
+                                                    </div>
+                                                </td>
+                                                <td class="slds-size_2-of-8">
+                                                    <lightning-button-icon icon-name="utility:delete"
+                                                        data-id={code.rpmitemList.Id}
+                                                        data-idx={index}
+                                                        data-value={value}
+                                                        alternative-text="Delete"
+                                                        class="slds-m-left_xx-small"
+                                                        onclick={removeRow} 
+                                                        title="Delete">
+                                                    </lightning-button-icon>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+
+                                <template if:true={isLoading}>
+                                    <div class="slds-spinner_container">
+                                        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                    </div>
+                                </template>
+
+                                <template if:true={isNonPick}>
+                                    <div class="slds-p-around_small">No value selected. Click on the Add Model</div>
+                                </template>
+                                
+                            </div>
+
+                            <div class="slds-form-element slds-size_5-of-5 slds-grid">
+
+                                <div class="slds-form-element slds-size_3-of-5">
+                                    <label class="slds-form-element__label" for="combobox-id-61" id="combobox-label-id-131">+ Add Model</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-combobox_container">
+                                            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click">
+                                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none" data-toggle="dropdown">
+                                                    <div role="combobox" tabindex="0" class="slds-input_faux slds-combobox__input" onclick={comboboxAct}  aria-labelledby="combobox-label-id-131 combobox-id-61-selected-value" id="combobox-id-61-selected-value" aria-controls="listbox-id-34" aria-expanded="false" aria-haspopup="listbox">
+                                                        <span class="slds-truncate" id="combobox-value-id-101">Add Model </span>
+                                                    </div>
+                                                    <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right">
+                                                        <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"></svg>
+                                                    </span>
+                                                </div>
+                                                <div role="listbox" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid">
+                                                    <div role="option">
+                                                        <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                            <template for:each={optionList} for:item="code" for:index="index">
+                                                                <li key={code.Id} data-value={code.Id} data-id={code.rpmitemList.Id} data-idx={index} onclick={selectItem} role="option" class="slds-listbox__item">
+                                                                    <div data-id={code.rpmitemList.Id} data-idx={index} class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option">
+                                                                        {code.label}
+                                                                    </div>
+                                                                </li>
+                                                            </template>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="slds-size_2-of-5 slds-p-left_medium">
+                                    <label class="slds-form-element__label slds-size_1-of-1">Add Model Btn </label>
+                                    <button class="slds-button slds-button_neutral" onclick={onClickSaveAll}>Add All</button>
+                                    <button class="slds-button slds-button_destructive" onclick={onClickDeleteAll}>Delete All</button>
+                                </div>
+
+                            </div>
+
+
+                            <div class="slds-size_1-of-1 slds-p-top_medium">
+                                <button class="slds-button slds-button_neutral" onclick={onClickSave}>Save</button>
+                                <button class="slds-button slds-button_destructive" onclick={onClickReset}>Reset</button>
+                            </div>
+                        </div>
+                    </template>
+
+                </template>
+                
+            </lightning-card>
+    </template>
+
+
+    <template if:true={isSelectedVolume}>
+        <template if:true={isSelectVolumeInfo}>
+            <div class="slds-grid slds-wrap">
+                <div class="slds-size_1-of-2">
+
+                    <lightning-card title="Eligibilities By Model" icon-name="standard:campaign">
+                            
+                        <div class="slds-size_1-of-1 slds-p-around_x-small p-box">
+                            <lightning-combobox 
+                                class="slds-size_2-of-5"
+                                name="itemSelect" 
+                                label="Item Group List" 
+                                value={selectedItemValue} 
+                                options={itemGroupCodes} 
+                                onchange={handleItemGroupChange}>
+                            </lightning-combobox>
+                        </div>
+                            
+                        <template if:true={isSelectedItems}>
+                            <template if:true={isDynamic}>
+                                <div class="slds-div slds-p-around_small">
+                                    <div class="slds-size_8-of-12 slds-truncate slds-p-around_x-small" style="display: flex; align-items: center; margin-left: auto;">
+                                        <lightning-input 
+                                            class="PayoutClass" name="Points" value={newPointsVal} onchange={handlePointsAllChange} placeholder="Please enter a value" variant="label-hidden">
+                                        </lightning-input>
+                                        <button class="slds-button slds-button_neutral" onclick={onClickPointsAll}>Points</button>
+                                        <lightning-input 
+                                            class="PayoutClass" name="Payout" value={newValue} onchange={handlePayoutAllChange} placeholder="Please enter a value" variant="label-hidden">
+                                        </lightning-input>
+                                        <button class="slds-button slds-button_neutral" onclick={onClickPayoutAll}>Payout</button>
+                                    </div>
+                                    <div style="height: 200px; overflow-y: scroll; display: flex; flex-direction: column;">
+                                        <table class="slds-table slds-size_1-of-1 slds-table_bordered slds-table_striped">
+                                            <thead>
+                                                <tr>
+                                                    <th data-label="Product Name" class="slds-size_4-of-12" scope="col">
+                                                        <div class="slds-size_1-of-1 slds-truncate" title="Product">
+                                                            Model
+                                                        </div>
+                                                    </th>
+                                                    <th data-label="Unit" class="slds-size_3-of-12" scope="col">
+                                                        <div class="slds-size_1-of-1 slds-truncate" title="Unit">
+                                                            Points
+                                                        </div>
+                                                    </th>
+                                                    <th data-label="Payout" class="slds-size_3-of-12" scope="col">
+                                                        <div class="slds-size_1-of-1 slds-truncate" title="Payout">
+                                                            Payout
+                                                        </div>
+                                                    </th>
+                                                    <th class="slds-size_2-of-12" scope="col">
+                                                        <div class="slds-truncate" title="Action">Action</div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={returnList} for:item="code" for:index="index">
+                                                    <tr key={code.Id} data-value={code.Id} data-id={code.Id}>
+                                                        <td class="slds-size_4-of-12">
+                                                            <div class="slds-size_1-of-1 slds-truncate" style="max-width: 128px;">{code.name}</div>
+                                                        </td>
+                                                        <td class="slds-size_3-of-12">
+                                                            <div class="slds-size_1-of-1 slds-truncate">
+                                                                <lightning-input class="discountClass" name="Unit" data-idx={index} data-id={code.Id}
+                                                                    value={code.rpmitemList.Unit__c} onchange={handleNumberChange} variant="label-hidden">
+                                                                </lightning-input>
+                                                            </div>
+                                                        </td>
+                                                        <td class="slds-size_3-of-12">
+                                                            <div class="slds-size_1-of-1 slds-truncate">
+                                                                <lightning-input class="discountClass" name="Payout" data-idx={index} data-id={code.Id}
+                                                                    value={code.rpmitemList.Payout__c} onchange={handleNumberChange} variant="label-hidden">
+                                                                </lightning-input>
+                                                            </div>
+                                                        </td>
+                                                        <td class="slds-size_2-of-12">
+                                                            <lightning-button-icon icon-name="utility:delete"
+                                                                data-id={code.rpmitemList.Id} 
+                                                                data-idx={index}      
+                                                                alternative-text="Delete"     
+                                                                class="slds-m-left_xx-small"
+                                                                onclick={removeRow} 
+                                                                title="Delete">
+                                                            </lightning-button-icon>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                </template>
+                                            </tbody>
+                                        </table>
+
+                                        <template if:true={isLoading}>
+                                            <div class="slds-spinner_container">
+                                                <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                            </div>
+                                        </template>
+
+                                        <template if:true={isNonPick}>
+                                            <div class="slds-p-around_small">No value selected. Click on the Add Model</div>
+                                        </template>
+                                    </div>
+
+
+
+                                    <div class="slds-form-element slds-size_6-of-6 slds-grid">
+                                        <div class="slds-form-element slds-size_3-of-6">
+                                            <label class="slds-form-element__label" for="combobox-id-63">+ Add Model</label>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-combobox_container">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none" data-toggle="dropdown">
+                                                            <div role="combobox" tabindex="0" class="slds-input_faux slds-combobox__input" onclick={comboboxAct} aria-controls="listbox-id-33" aria-expanded="false" aria-haspopup="listbox">
+                                                                <span class="slds-truncate" >Add Model </span>
+                                                            </div>
+                                                            <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right">
+                                                                <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"></svg>
+                                                            </span>
+                                                        </div>
+                                                        <div role="listbox" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid">
+                                                            <div role="option">
+                                                                <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                    <template for:each={optionList} for:item="code" for:index="index">
+                                                                        <li key={code.rpmitemList.Id} data-value={code.Id} data-id={code.rpmitemList.Id} data-idx={index} onclick={selectItem} role="option" class="slds-listbox__item">
+                                                                            <div data-id={code.rpmitemList.Id} data-idx={index} class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option">
+                                                                                {code.label}
+                                                                            </div>
+                                                                        </li>
+                                                                    </template>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="slds-size_3-of-6 slds-p-left_medium">
+                                            <label class="slds-form-element__label slds-size_1-of-1">Add Model Btn </label>
+                                            <button class="slds-button slds-button_neutral" onclick={onClickSaveAll}>Add All</button>
+                                            <button class="slds-button slds-button_destructive" onclick={onClickDeleteAll}>Delete All</button>
+                                        </div>
+
+                                    </div>
+                                
+                                    <div class="slds-size_1-of-1 slds-p-top_medium">
+                                        <button class="slds-button slds-button_neutral" onclick={onClickSave}>Save</button>
+                                        <button class="slds-button slds-button_destructive" onclick={onClickReset}>Reset</button>
+                                    </div>
+
+                                </div>
+                            </template>
+                        </template>
+                    </lightning-card>
+                </div>
+                
+
+                <div class="slds-size_1-of-2 slds-p-left_small">
+
+                    <lightning-card title="Payout Structure" icon-name="standard:campaign">
+                        
+                        <template if:true={isSelectedItems}>
+                            <template if:true={isPayoutDynamic}>
+                                <div class="slds-div slds-p-around_small">
+
+                                        <table class="slds-table slds-size_1-of-1 slds-table_bordered slds-table_striped">
+                                            <thead>
+                                                <tr>
+                                                    <th data-label="Product Name" class="" scope="col">
+                                                        <div class="slds-size_1-of-1 slds-truncate slds-align_absolute-center" title="Product">
+                                                            Registered
+                                                        </div>
+                                                    </th>
+                                                    <th data-label="Amount" class="" scope="col">
+                                                        <div class="slds-size_1-of-1 slds-truncate slds-align_absolute-center" title="Amount">
+                                                            Amount
+                                                        </div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate" title="Action">Action</div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={payoutList} for:item="code" for:index="secondindex">
+                                                    <tr key={code.Id} data-id={code.Id} data-value={code.Id}>
+                                                        <td> 
+                                                            <div class="slds-size_1-of-1 slds-text-align_center slds-grid">
+                                                                <div class="additional-text slds-align_absolute-center slds-p-right_xx-small" style="font-size: 20px;font-weight: 400;">≥</div>
+                                                                <lightning-input class="discountClass" name="Registered" data-index={secondindex}
+                                                                    value={code.Registered__c} onchange={handlePayoutChange} variant="label-hidden">
+                                                                </lightning-input>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="slds-size_1-of-1 slds-text-align_center slds-grid">
+                                                                <div class="additional-text slds-align_absolute-center slds-p-right_xx-small" style="font-size: 20px;font-weight: 400;">$</div>
+                                                                <lightning-input class="discountClass" name="Amount" data-index={secondindex}
+                                                                    value={code.Amount__c} onchange={handlePayoutChange} variant="label-hidden">
+                                                                </lightning-input>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <lightning-button-icon icon-name="utility:delete"
+                                                                data-id={code.Id}
+                                                                data-idx={secondindex}
+                                                                data-value={value}
+                                                                alternative-text="Delete"
+                                                                class="slds-m-left_xx-small"
+                                                                onclick={removePayoutRow} 
+                                                                title="Delete">
+                                                            </lightning-button-icon>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                </div>
+
+                            
+                                <div class="slds-m-top_large slds-m-bottom_large slds-p-left_medium">
+                                    <lightning-button label="Add Payout" slot="actions" icon-name="utility:add" onclick={addRow}></lightning-button>
+                                </div>
+                                
+                                <div class="slds-m-top_large slds-m-bottom_large slds-p-left_medium">
+                                    <button class="slds-button slds-button_neutral" onclick={onClickPayoutSave}>Save</button>
+                                    <button class="slds-button slds-button_destructive" onclick={onClickPayoutReset}>Reset</button>
+                                </div>
+
+                            </template>
+                        </template>
+                    </lightning-card>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

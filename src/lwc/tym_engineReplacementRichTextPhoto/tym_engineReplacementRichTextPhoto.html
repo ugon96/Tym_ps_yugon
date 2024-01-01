@@ -1,0 +1,194 @@
+<!--
+ * @author : th.kim
+ * @date : 2023-10-26
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver Date Author Modification
+ 1.0    Initial Version
+-->
+<!-- Tym Engine Replacement Rich Text Photo -->
+
+<template>
+    <div class="slds-grid slds-wrap slds-size_1-of-1">
+        <div class="slds-size_1-of-2 slds-p-bottom_small">
+            <lightning-card>
+                <lightning-card  title="Quantity of Engine Oil">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="Quantity of Engine Oil" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={engineOilFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Quantity of Engine Oil" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Quantity of Coolant">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="Quantity of Coolant" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={coolantFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Quantity of Coolant" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Radiator Grill">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="Radiator Grill" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={radiatorGrillFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Radiator Grill" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Air Filter">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="Air Filter" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={airFilterFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Air Filter" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Air Hose & Clamps">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="Air Hose & Clamps" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={airHoseClampsFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Air Hose & Clamps" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Meter Panel">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="Meter Panel" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={meterPanelFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="Meter Panel" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="ETC">
+                    <div class="slds-p-around_medium">
+                        <lightning-input type="file" label="ETC" onchange={onFileUpload} multiple="true"></lightning-input>
+                        <template for:each={etcFileData} for:item="file" for:index="idx">
+                            <div key={file} class="slds-grid slds-size_1-of-1">
+                                <p class="slds-truncate">{file.fileName}</p>
+                                <button data-idx={idx} data-label="ETC" data-size={file.fileSize} onclick={onDeleteFileClcik}>X</button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+                <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                    <lightning-button variant="brand" label="Save" title="Save" onclick={onUploadClick}></lightning-button>
+                </div>
+                <!-- 로딩 스피너 -->
+                <template if:true={isLoading}>
+                    <div class="spinner">
+                        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                    </div>
+                </template>
+            </lightning-card>
+        </div>
+        <div class="slds-size_1-of-2">
+            <lightning-card>
+                <lightning-card  title="Quantity of Engine Oil">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnEengineOilData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Quantity of Coolant">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnCoolantData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Radiator Grill">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnRadiatorGrillData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Air Filter">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnAirFilterData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Air Hose & Clamps">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnAirHoseClampsData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="Meter Panel">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnMeterPanelData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+                <lightning-card  title="ETC">
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={returnEtcData} for:item="item" for:index="index">
+                                <div key={item.url} class="slds-size_1-of-5 slds-p-horizontal_x-small img-box">
+                                    <p class="slds-truncate">{item.name}</p>
+                                    <img src={item.url} alt={item.name}>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </lightning-card>
+            </lightning-card>
+        </div>
+    </div>
+</template>

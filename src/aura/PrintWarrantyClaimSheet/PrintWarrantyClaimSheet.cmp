@@ -1,0 +1,65 @@
+<!--
+ - Created by 천유정 on 2023-09-11.
+ -->
+
+<aura:component description="PrintWarrantyClaimSheet"
+                controller="PrintWarrantyClaimSheetController"
+                implements="force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes"> 
+
+    <aura:attribute name="vfPageUrl" type="String"/>
+    <aura:attribute name="pdfType" type="String" default="PI"/>
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+    <aura:attribute name="isCommunity" type="Boolean" default="false"/>
+    <aura:registerEvent name="Community_ButtonList_evt" type="c:Community_ButtonList_evt"/>
+    <aura:html tag="style">
+        .slds-modal__container{
+        min-width: 80% !important;
+        max-width: fit-content !important;
+        padding: 0 20 20 20px;
+        }
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }
+        .slds-modal__content {
+        overflow-y: hidden !important;
+        height: unset !important;
+        max-height: unset !important;
+        }
+        .iframe-padding-left-right {
+        <!--padding-right: 200px;
+        padding-left : 200px;-->
+        }
+    </aura:html>
+
+    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+        <div class="slds-modal__container">
+            <div class="slds-col modal-header slds-modal__header">
+                <h2 class="title slds-text-heading--medium">
+                    PDF Preview
+                </h2>
+            </div>
+            <!-- (Style) divContent : 전체 Modal 크기 조절 -->
+            <div class="slds-col slds-modal__content divContent scrollable slds-p-around--medium" style="position:relative;min-height:80vh;">
+                <aura:if isTrue="{!v.showSpinner}">
+                    <lightning:spinner aura:id="spinner" alternativeText="Loading" size="small" variant="brand"/>
+                </aura:if>
+                <lightning:layout class="slds-p-top-small slds-align_absolute-center slds-size_1-of-1" multipleRows="true" > <!--slds-align_absolute-center-->
+                    <lightning:layoutItem size="12" class="iframe-padding-left-right">
+                        <iframe aura:id="vfFrameMaster" class="iFrameStyle" src="{! v.vfPageUrl}" style="width: 100%;height: 78vh;"/>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+
+            <div class="slds-col modal-footer slds-modal__footer">
+                <lightning:button variant="brand" label="Save" onclick="{!c.fnSave}"/>
+                <lightning:button variant="neutral" label="Cancel" onclick="{!c.fnCancel}"/>
+            </div>
+        </div>
+    </section>
+    <aura:if isTrue="{!v.isCommunity}">
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

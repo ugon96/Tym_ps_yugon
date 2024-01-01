@@ -1,0 +1,824 @@
+<!--
+ * @author : th.kim
+ * @date : 2023-11-03
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver       Date            Author            Modification
+   1.0       2023-11-03      th.kim            Initial Version
+-->
+<!-- Tym Retail Program Reg -->
+
+<template>
+    <div class="c-container">
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item padding="around-small" size="12" class="slds-p-bottom_none">
+                <div class="slds-grid slds-size_1-of-1">
+                    <div class="slds-text-heading_medium">
+                        <h1 class="header-title">Retail Programs</h1>
+                    </div>
+                    <template if:false={isDealer}>
+                        <template lwc:if={isSubmitButtom}>
+                            <button class="slds-button slds-button_brand slds-m-right_medium save" onclick={onSubmitClick}>Save</button>
+                        </template>
+                        <template lwc:else>
+                            <button class="slds-button slds-button_brand slds-m-right_medium save" onclick={onSubmitClick} disabled>Save</button>
+                        </template>
+                    </template>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small" size="12">
+                <lightning-layout-item padding="around-small" size="12">
+                    <div class="page-section">
+                        <lightning-accordion allow-multiple-sections-open onsectiontoggle={handleSectionToggle}
+                            active-section-name={activeSections}>
+
+                            <!-- Accordaion A Start -->
+                            <lightning-accordion-section
+                                name="A"
+                                label="Apply for Rebate"
+                                class="slds-m-bottom_small accordion-section">
+                                <div class="slds-grid slds-wrap accordion-content slide-down" style="position: relative;">
+                                    <template if:false={isRebateData}>
+                                        <div class="slds-p-around_xx-large">There are no bonuses available in this category</div>
+                                    </template>
+                                    <template if:true={isRebateData}>
+                                        <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-around_large" style="overflow-x: auto">
+                                            <div class="slds-grid slds-size_1-of-1 header-box">
+                                                <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 250px;">
+                                                    <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                        for="combobox-1" part="label" data-form-label="">Eligible
+                                                        Program</label>
+                                                </div>
+                                                <template lwc:if={isAdjusted}>
+                                                    <template lwc:if={isDealer}>
+                                                        <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                                for="text-1" part="label" data-form-label="">Description</label>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="slds-size_2-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                                for="text-1" part="label" data-form-label="">Description</label>
+                                                        </div>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <label class="slds-size_1-of-1 slds-truncate slds-form-element__label slds-no-flex"
+                                                                for="text-1" part="label" data-form-label="" title="%(Invoice Amt.)">%(Invoice Amt.)
+                                                                <lightning-helptext content="In case of Rebate (Flat Rate), the % is calculated based on the A/R Invoice Amount ordered by the Dealer. It may differ from the Claimed."></lightning-helptext>
+                                                            </label>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="slds-size_4-of-12 slds-p-right_medium" style="width: 200px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="text-1" part="label" data-form-label="">Description</label>
+                                                    </div>
+                                                </template>
+                                                <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                    <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                        for="number-1" part="label" data-form-label="">Claimed</label>
+                                                </div>
+                                                <template lwc:if={isAdjusted}>
+                                                    <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="number-2" part="label" data-form-label="">Adjusted</label>
+                                                    </div>
+                                                </template>
+                                                <div class="slds-grid slds-size_3-of-12" style="width: 400px;">
+                                                    <div class="slds-size_1-of-2 slds-p-right_medium">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="file-1" part="label" data-form-label="">Attachment</label>
+                                                    </div>
+                                                    <div class="slds-size_1-of-2 slds-p-right_medium">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="status-1" part="label" data-form-label="">Status</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <template for:each={rebateList} for:item="rebate" for:index="idx">
+                                                <div key={rebate.itemId} class="slds-grid slds-size_1-of-1 slds-p-bottom_small">
+                                                    <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 250px;">
+                                                        <template lwc:if={rebate.itemId}>
+                                                            <template lwc:if={isEditable}>
+                                                                <input type="text" id="combobox-1" class="slds-size_1-of-1 dropdown-input" value={rebate.programLabel}
+                                                                    data-idx={idx} data-type="rebate" onclick={toggleDropdown} readonly>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <lightning-input id="combobox-1-1" type="text" name="Combobox"
+                                                                    value={rebate.programLabel} variant="label-hidden" readonly></lightning-input>
+                                                            </template>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <template lwc:if={isEditable}>
+                                                                <input type="text" readonly class="slds-size_1-of-1 dropdown-input" value="" data-idx={idx} data-type="rebate" onclick={toggleDropdown} onblur={onBlur}>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <lightning-input id="combobox-11-1" type="text" name="Combobox"
+                                                                    value="" variant="label-hidden" readonly></lightning-input>
+                                                            </template>
+                                                        </template>
+                                                        <template lwc:if={rebate.isDropdown}>
+                                                            <div style="position: relative;">
+                                                                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-truncate dropdown slide-down">
+                                                                    <template for:each={filteredOptions} for:item="option">
+                                                                        <button key={option.itemId} onclick={dropdownClick} data-type="rebate" data-idx={idx}
+                                                                            data-id={option.itemId} data-productid={option.productId} data-programid={option.programId}
+                                                                            data-label={option.label} data-amount={option.amount} data-manager={option.manager}
+                                                                            data-required={option.requiredFile} data-invoiceamt={option.invoiceAmt} data-caneditclaimed={option.canEditClaimed}
+                                                                            class="slds-size_1-of-1 slds-p-around_x-small">{option.label}</button>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                    <template lwc:if={isAdjusted}>
+                                                        <template lwc:if={isDealer}>
+                                                            <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 200px;">
+                                                                <lightning-input id="text-1" type="text" name="Description"
+                                                                    placeholder="Enter Description" value={rebate.description}
+                                                                    data-idx={idx} data-type="rebate" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                            </div>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <div class="slds-size_2-of-12 slds-p-right_medium" style="width: 200px;">
+                                                                <lightning-input id="text-01" type="text" name="Description"
+                                                                    placeholder="Enter Description" value={rebate.description}
+                                                                    data-idx={idx} data-type="rebate" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                            </div>
+                                                            <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                                <lightning-input id="number-01" type="number" name="invoiceAmt"
+                                                                    value={rebate.invoiceAmt} data-idx={idx} formatter="currency"
+                                                                    step="0.01" variant="label-hidden" data-type="rebate" title={rebate.invoiceAmt} disabled></lightning-input>
+                                                            </div>
+                                                        </template>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="slds-size_4-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <lightning-input id="text-011" type="text" name="Description"
+                                                                placeholder="Enter Description" value={rebate.description}
+                                                                data-idx={idx} data-type="rebate" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:if={isAdmin}>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <lightning-input id="number-1" type="number" name="Amount"
+                                                                value={rebate.amount} data-idx={idx} formatter="currency"
+                                                                step="0.01" variant="label-hidden" data-type="rebate"
+                                                                onchange={onRebateAmountChange}></lightning-input>
+                                                        </div>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <lightning-input id="number-2" type="number" name="Manager Amount"
+                                                                value={rebate.manager} data-idx={idx} formatter="currency"
+                                                                step="0.01" variant="label-hidden" data-type="rebate"
+                                                                onchange={onMangerAmountChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:elseif={isTymUser}>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <lightning-input id="number-12" type="number" name="Amount"
+                                                                value={rebate.amount} data-idx={idx} formatter="currency"
+                                                                step="0.01" variant="label-hidden" data-type="rebate"
+                                                                onchange={onRebateAmountChange} title={rebate.amount}></lightning-input>
+                                                        </div>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <lightning-input id="number-21" type="number" name="Manager Amount"
+                                                                value={rebate.manager} data-idx={idx} formatter="currency"
+                                                                step="0.01" variant="label-hidden" data-type="rebate"
+                                                                onchange={onMangerAmountChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <template lwc:if={rebate.canEditClaimed}>
+                                                            <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                                <lightning-input id="number13" type="number" name="Amount"
+                                                                    value={rebate.amount} data-idx={idx} formatter="currency"
+                                                                    step="0.01" variant="label-hidden" data-type="rebate"
+                                                                    onchange={onRebateAmountChange} title={rebate.amount}></lightning-input>
+                                                            </div>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                                <lightning-input id="number-13" type="number" name="Amount"
+                                                                    value={rebate.amount} data-idx={idx} formatter="currency"
+                                                                    step="0.01" variant="label-hidden" data-type="rebate"
+                                                                    onchange={onRebateAmountChange} title={rebate.amount} disabled></lightning-input>
+                                                            </div>
+                                                        </template>
+                                                        <template lwc:if={isAdjusted}>
+                                                            <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                                <lightning-input id="number-23" type="number" name="Manager Amount"
+                                                                    value={rebate.manager} data-idx={idx} formatter="currency"
+                                                                    step="0.01" variant="label-hidden" data-type="rebate"
+                                                                    onchange={onMangerAmountChange} title={rebate.manager} disabled></lightning-input>
+                                                            </div>
+                                                        </template>
+                                                    </template>
+                                                    <div class="slds-size_3-of-12" style="width: 400px;">
+                                                        <div class="slds-grid slds-wrap">
+                                                            <template if:false={rebate.attachment}>
+                                                                <template lwc:if={rebate.requiredFile}>
+                                                                    <input type="file" class="slds-size_1-of-2 slds-p-right_medium" style="width: 200px;" id="file" data-idx={idx} data-type="rebate" onchange={onFileChange} required>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <input type="file" class="slds-size_1-of-2 slds-p-right_medium" style="width: 200px;" id="file-01" data-idx={idx} data-type="rebate" onchange={onFileChange} required>
+                                                                </template>
+                                                            </template>
+                                                            <template if:true={rebate.attachment}>
+                                                                <div class="slds-grid slds-size_1-of-2 link" style="width: 200px;">
+                                                                    <template lwc:if={rebate.imgUrl}>
+                                                                        <a class="slds-size_3-of-4 slds-truncate" data-type="rebate" data-idx={idx} href={rebate.imgUrl}>{rebate.attachment}</a>
+                                                                    </template>
+                                                                    <template lwc:else>
+                                                                        <a class="slds-size_3-of-4 slds-truncate" data-type="rebate" data-idx={idx} onclick={onAttachmentDownload}>{rebate.attachment}</a>
+                                                                    </template>
+                                                                    <template lwc:if={isEditable}>
+                                                                        <button class="delete-file" data-idx={idx} data-type="rebate" onclick={onDeleteFileClcik}>X</button>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                            <div class="slds-size_1-of-2 slds-p-right_medium" style="width: 200px;">
+                                                                <template lwc:if={isDealer}>
+                                                                    <lightning-combobox
+                                                                        name="Status"
+                                                                        variant="label-hidden"
+                                                                        value={rebate.status}
+                                                                        data-idx={idx}
+                                                                        data-type="rebate"
+                                                                        placeholder="Select Status"
+                                                                        options={statusOptions}
+                                                                        onchange={onStatusChange}
+                                                                        disabled></lightning-combobox>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <lightning-combobox
+                                                                        name="Status"
+                                                                        variant="label-hidden"
+                                                                        value={rebate.status}
+                                                                        data-idx={idx}
+                                                                        data-type="rebate"
+                                                                        placeholder="Select Status"
+                                                                        options={statusOptions}
+                                                                        onchange={onStatusChange}></lightning-combobox>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- <div class="slds-size_1-of-12"> -->
+                                                        <template lwc:if={isEditable}>
+                                                            <div class="slds-p-right_medium">
+                                                                <lightning-button-icon data-idx={idx} data-id={rebate.itemId} data-productid={rebate.productId}
+                                                                    icon-name="utility:delete" alternative-text="Delete"
+                                                                    title="Delete" data-type="rebate" data-programid={rebate.programId}
+                                                                    onclick={onDeleteClick}></lightning-button-icon>
+                                                            </div>
+                                                        </template>
+                                                    <!-- </div> -->
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="slds-size_1-of-1 slds-p-around_large">
+                                            <template if:true={isAddButtonTrue}>
+                                                <template lwc:if={isEditable}>
+                                                    <button class="slds-box slds-box_small" data-type="rebate" onclick={onAddRebateClick}>+ Add Rebate</button>
+                                                </template>
+                                            </template>
+                                        </div>
+
+                                    </template>
+                                    <div class="slds-grid slds-size_1-of-1 slds-border_top card-bottom-wrap">
+                                        <div class="slds-grid slds-size_1-of-1 slds-p-around_large slds-border_right card-bottom">
+                                            <div class="slds-align_absolute-center">
+                                                <div>Total Requested Amount:</div>
+                                                <div class="slds-m-left_x-small">${totalAmount}</div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-size_1-of-1 slds-p-around_large card-bottom">
+                                            <lightning-radio-group name="radioGroup" variant="label-hidden"
+                                                options={rebateRadioOptions} value={rebateRadioValue} type="radio"
+                                                data-type="rebate" onchange={onRadioChange}>
+                                            </lightning-radio-group>
+                                        </div>
+                                    </div>
+                                    <!-- 로딩 스피너 -->
+                                    <template if:true={isLoadingData}>
+                                        <div class="spinner">
+                                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                </div>
+                            </lightning-accordion-section>
+                            <!-- Accordaion A End -->
+
+                            <!-- Accordaion B Start -->
+                            <lightning-accordion-section name="B" label="Apply for Volume Incentive"
+                                class="accordion-section slds-m-bottom_small">
+                                <div class="slds-grid slds-wrap accordion-content slide-down" style="position: relative; overflow-x: auto;">
+                                    <template if:false={isVolumeData}>
+                                        <div class="slds-p-around_xx-large">There are no bonuses available in this category</div>
+                                    </template>
+                                    <template if:true={isVolumeData}>
+                                        <!-- <template lwc:if={isEditable}> -->
+                                            <div class="slds-grid slds-size_1-of-1 slds-p-around_large">
+                                                <div class="slds-p-right_medium">
+                                                    <label class="slds-size_1-of-1 slds-truncate slds-form-element__label slds-no-flex"
+                                                        for="combobox-2" part="label" data-form-label="" title="Pay To Dealer">Pay To Dealer</label>
+                                                    <div class="slds-align_absolute-center">
+                                                        <lightning-input type="checkbox" variant="label-hidden" name="checkbox1" data-type="volume" checked={isPayToDealer} onchange={onCheckboxChange}></lightning-input>
+                                                    </div>
+                                                </div>
+                                                <template lwc:if={isPayToDealer}>
+                                                    <lightning-combobox
+                                                        name="Salesperson"
+                                                        label="Salesperson"
+                                                        value={volumeSalesPerson}
+                                                        placeholder="Select Salesperson"
+                                                        options={salesPersonOptions}
+                                                        onchange={onSalespersonChange}
+                                                        disabled></lightning-combobox>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-combobox
+                                                        name="Salesperson"
+                                                        label="Salesperson"
+                                                        value={volumeSalesPerson}
+                                                        placeholder="Select Salesperson"
+                                                        options={salesPersonOptions}
+                                                        onchange={onSalespersonChange}></lightning-combobox>
+                                                </template>
+                                            </div>
+                                        <!-- </template> -->
+                                        <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-around_large" style="overflow-x: auto">
+                                            <div class="slds-grid slds-size_1-of-1 header-box">
+                                                <!-- <div class="slds-size_1-of-24">
+                                                    <label class="slds-size_1-of-1 slds-truncate slds-form-element__label slds-no-flex"
+                                                        for="combobox-2" part="label" data-form-label="" title="Pay to Dealer">Pay to Dealer</label>
+                                                </div> -->
+                                                <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 250px;">
+                                                    <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                        for="combobox-2" part="label" data-form-label="">Eligible
+                                                        Program</label>
+                                                </div>
+                                                <template lwc:if={isDealer}>
+                                                    <div class="slds-size_4-of-12 slds-p-right_medium" style="width: 200px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="text-2" part="label" data-form-label="">Description</label>
+                                                    </div>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 200px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="text-2" part="label" data-form-label="">Description</label>
+                                                    </div>
+                                                </template>
+                                                <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                    <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                        for="number-3" part="label" data-form-label="">Amount</label>
+                                                </div>
+                                                <template if:false={isDealer}>
+                                                    <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="adjusted-01" part="label" data-form-label="">Adjusted</label>
+                                                    </div>
+                                                </template>
+                                                <div class="slds-grid slds-size_3-of-12" style="width: 400px;">
+                                                    <div class="slds-size_1-of-2 slds-p-right_medium">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="file-2" part="label" data-form-label="">Attachment</label>
+                                                    </div>
+                                                    <div class="slds-size_1-of-2 slds-p-right_medium">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="status-2" part="label" data-form-label="">Status</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <template for:each={volumeList} for:item="volume" for:index="idx">
+                                                <div key={volume.itemId} class="slds-grid slds-size_1-of-1 slds-p-bottom_small">
+                                                    <!-- <div class="slds-align_absolute-center slds-size_1-of-24">
+                                                        <lightning-input type="checkbox" variant="label-hidden" name="checkbox1" data-idx={idx} checked={volume.payToDealer} onchange={onCheckboxChange}></lightning-input>
+                                                    </div> -->
+                                                    <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 250px;">
+                                                        <template lwc:if={volume.itemId}>
+                                                            <template lwc:if={isEditable}>
+                                                                <input type="text" id="combobox-2" readonly class="slds-size_1-of-1 dropdown-input" value={volume.programLabel}
+                                                                    data-idx={idx} data-type="volume" onclick={toggleDropdown}>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <lightning-input id="combobox-2-1" type="text" name="Combobox"
+                                                                    value={volume.programLabel} variant="label-hidden" readonly></lightning-input>
+                                                            </template>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <template lwc:if={isEditable}>
+                                                                <input type="text" readonly class="slds-size_1-of-1 dropdown-input" value="" data-idx={idx} data-type="volume" onclick={toggleDropdown} onblur={onBlur}>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <lightning-input id="combobox-22-1" type="text" name="Combobox"
+                                                                    value="" variant="label-hidden" readonly></lightning-input>
+                                                            </template>
+                                                        </template>
+                                                        <template lwc:if={volume.isDropdown}>
+                                                            <div style="position: relative;">
+                                                                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-truncate dropdown slide-down">
+                                                                    <template for:each={volumeFilteredOptions} for:item="option">
+                                                                        <button key={option.itemId} onclick={dropdownClick} data-unit={option.unit}
+                                                                            data-type="volume" data-idx={idx} data-id={option.itemId}
+                                                                            data-productid={option.productId} data-programid={option.programId} data-label={option.label}
+                                                                            data-amount={option.amount} data-manager={option.manager}
+                                                                            class="slds-size_1-of-1 slds-p-around_x-small">{option.label}</button>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                    <template lwc:if={isDealer}>
+                                                        <div class="slds-size_4-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <lightning-input id="text-2" type="text" name="Description"
+                                                                placeholder="Enter Description" value={volume.description}
+                                                                data-idx={idx} data-type="volume" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <lightning-input id="text-22" type="text" name="Description"
+                                                                placeholder="Enter Description" value={volume.description}
+                                                                data-idx={idx} data-type="volume" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                        <lightning-input id="number-3" type="number" name="Amount" title={volume.amount}
+                                                            value={volume.amount} data-idx={idx} formatter="currency"
+                                                            step="0.01" variant="label-hidden" data-type="volume"
+                                                            onchange={onRebateAmountChange} disabled></lightning-input>
+                                                    </div>
+                                                    <template if:false={isDealer}>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <lightning-input id="adjusted-02" type="number" name="Adjusted" title={volume.manager}
+                                                                value={volume.manager} data-idx={idx} formatter="currency"
+                                                                step="0.01" variant="label-hidden" data-type="volume"
+                                                                onchange={onMangerAmountChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <div class="slds-size_3-of-12" style="width: 400px;">
+                                                        <div class="slds-grid slds-wrap">
+                                                            <template if:false={volume.attachment}>
+                                                                <template lwc:if={volume.requiredFile}>
+                                                                    <input type="file" class="slds-size_1-of-2 slds-p-right_medium" id="file-2" data-idx={idx} data-type="volume" onchange={onFileChange}>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <input type="file" class="slds-size_1-of-2 slds-p-right_medium" id="file-22" data-idx={idx} data-type="volume" onchange={onFileChange} required>
+                                                                </template>
+                                                            </template>
+                                                            <template if:true={volume.attachment}>
+                                                                <div class="slds-grid slds-size_1-of-2 link">
+                                                                    <template lwc:if={volume.imgUrl}>
+                                                                        <a class="slds-size_3-of-4 slds-truncate" data-type="volume" data-idx={idx} href={volume.imgUrl}>{volume.attachment}</a>
+                                                                    </template>
+                                                                    <template lwc:else>
+                                                                        <a class="slds-size_3-of-4 slds-truncate" data-type="volume" data-idx={idx} onclick={onAttachmentDownload}>{volume.attachment}</a>
+                                                                    </template>
+                                                                    <template lwc:if={isEditable}>
+                                                                        <button class="delete-file" data-idx={idx} onclick={onDeleteFileClcik}>X</button>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                            <div class="slds-size_1-of-2 slds-p-right_medium slds-p-right_medium">
+                                                                <template lwc:if={isDealer}>
+                                                                    <lightning-combobox
+                                                                        name="Status"
+                                                                        variant="label-hidden"
+                                                                        value={volume.status}
+                                                                        data-idx={idx}
+                                                                        data-type="volume"
+                                                                        placeholder="Select Status"
+                                                                        options={statusOptions}
+                                                                        onchange={onStatusChange}
+                                                                        disabled></lightning-combobox>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <lightning-combobox
+                                                                        name="Status"
+                                                                        variant="label-hidden"
+                                                                        value={volume.status}
+                                                                        data-idx={idx}
+                                                                        data-type="volume"
+                                                                        placeholder="Select Status"
+                                                                        options={statusOptions}
+                                                                        onchange={onStatusChange}></lightning-combobox>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <template lwc:if={isEditable}>
+                                                        <div class="slds-p-right_medium">
+                                                            <lightning-button-icon data-idx={idx} data-id={volume.itemId} data-productid={volume.productId}
+                                                                icon-name="utility:delete" alternative-text="Delete"
+                                                                title="Delete" data-type="volume" data-programid={volume.programId}
+                                                                onclick={onDeleteClick}></lightning-button-icon>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <!-- <div class="slds-size_1-of-1 slds-p-around_large">
+                                            <template lwc:if={isEditable}>
+                                                <template if:true={volumeIsAddButtonTrue}>
+                                                    <button class="slds-box slds-box_small" data-type="volume" onclick={onAddRebateClick}>+ Add Volume</button>
+                                                </template>
+                                            </template>
+                                        </div> -->
+                                    </template>
+                                    <div class="slds-grid slds-size_1-of-1 slds-border_top card-bottom-wrap">
+                                        <div class="slds-grid slds-size_1-of-1 slds-p-around_large slds-border_right card-bottom">
+                                            <div class="slds-align_absolute-center">
+                                                <div>Total Requested Amount:</div>
+                                                <div class="slds-m-left_x-small">${volumeTotalAmount}</div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-size_1-of-1 slds-p-around_large card-bottom">
+                                            <lightning-radio-group name="radioGroup-1" variant="label-hidden"
+                                                options={volumeRadioOptions} value={volumeRadioValue} type="radio"
+                                                data-type="volume" onchange={onRadioChange}>
+                                            </lightning-radio-group>
+                                        </div>
+                                    </div>
+                                    <!-- 로딩 스피너 -->
+                                    <template if:true={isLoadingData}>
+                                        <div class="spinner">
+                                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                </div>
+                            </lightning-accordion-section>
+                            <!-- Accordaion B End -->
+
+                            <!-- Accordaion C Start -->
+                            <lightning-accordion-section name="C" label="Apply for Salesperson Bonus"
+                                class="accordion-section">
+                                <div class="slds-grid slds-wrap accordion-content slide-down" style="position: relative;">
+                                    <template if:false={isBonusData}>
+                                        <div class="slds-p-around_xx-large">There are no bonuses available in this category</div>
+                                    </template>
+                                    <template if:true={isBonusData}>
+                                        <!-- <template lwc:if={isEditable}> -->
+                                            <div class="slds-grid slds-size_1-of-1 slds-p-around_large">
+                                                <div class="slds-p-right_medium">
+                                                    <label class="slds-size_1-of-1 slds-truncate slds-form-element__label slds-no-flex"
+                                                        for="combobox-2" part="label" data-form-label="" title="Pay To Dealer">Pay To Dealer</label>
+                                                    <div class="slds-align_absolute-center">
+                                                        <lightning-input type="checkbox" variant="label-hidden" name="checkbox2" checked={isBonusPayToDealer} data-type="bonus" onchange={onCheckboxChange}></lightning-input>
+                                                    </div>
+                                                </div>
+                                                <template lwc:if={isBonusPayToDealer}>
+                                                    <lightning-combobox
+                                                        name="Salesperson-01"
+                                                        label="Salesperson"
+                                                        value={bonusSalesPerson}
+                                                        placeholder="Select Salesperson"
+                                                        options={salesPersonOptions}
+                                                        onchange={onBonusSalespersonChange}
+                                                        disabled></lightning-combobox>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-combobox
+                                                        name="Salesperson-01"
+                                                        label="Salesperson"
+                                                        value={bonusSalesPerson}
+                                                        placeholder="Select Salesperson"
+                                                        options={salesPersonOptions}
+                                                        onchange={onBonusSalespersonChange}></lightning-combobox>
+                                                </template>
+                                            </div>
+                                        <!-- </template> -->
+                                        <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-around_large" style="overflow-x: auto">
+                                            <div class="slds-grid slds-size_1-of-1 header-box">
+                                                <!-- <div class="slds-size_1-of-24">
+                                                    <label class="slds-size_1-of-1 slds-truncate slds-form-element__label slds-no-flex"
+                                                        for="combobox-2" part="label" data-form-label="" title="Pay to Dealer">Pay to Dealer</label>
+                                                </div> -->
+                                                <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 250px;">
+                                                    <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                        for="combobox-2" part="label" data-form-label="">Eligible
+                                                        Program</label>
+                                                </div>
+                                                <template lwc:if={isDealer}>
+                                                    <div class="slds-size_4-of-12 slds-p-right_medium" style="width: 200px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="text-2" part="label" data-form-label="">Description</label>
+                                                    </div>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 200px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="text-2" part="label" data-form-label="">Description</label>
+                                                    </div>
+                                                </template>
+                                                <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                    <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                        for="number-3" part="label" data-form-label="">Amount</label>
+                                                </div>
+                                                <template if:false={isDealer}>
+                                                    <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="adjusted-01" part="label" data-form-label="">Adjusted</label>
+                                                    </div>
+                                                </template>
+                                                <div class="slds-grid slds-size_3-of-12"  style="width: 400px;">
+                                                    <div class="slds-size_1-of-2 slds-p-right_medium">
+                                                        <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                            for="file-2" part="label" data-form-label="">Attachment</label>
+                                                    </div>
+                                                        <div class="slds-size_1-of-2 slds-p-right_medium">
+                                                            <label class="slds-size_1-of-1 slds-form-element__label slds-no-flex"
+                                                                for="status-2" part="label" data-form-label="">Status</label>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                            <template for:each={bonusList} for:item="bonus" for:index="idx">
+                                                <div key={bonus.itemId} class="slds-grid slds-size_1-of-1 slds-p-bottom_small">
+                                                    <!-- <div class="slds-align_absolute-center slds-size_1-of-24">
+                                                        <lightning-input type="checkbox" variant="label-hidden" name="checkbox1" data-idx={idx} checked={bonus.payToDealer} onchange={onBonusCheckboxChange}></lightning-input>
+                                                    </div> -->
+                                                    <div class="slds-size_3-of-12 slds-p-right_medium"  style="width: 250px;">
+                                                        <template lwc:if={bonus.itemId}>
+                                                            <template lwc:if={isEditable}>
+                                                                <input type="text" readonly class="slds-size_1-of-1 dropdown-input" value={bonus.programLabel}
+                                                                    data-idx={idx} data-type="bonus" onclick={toggleDropdown}>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <lightning-input type="text" name="Combobox"
+                                                                    value={bonus.programLabel} variant="label-hidden" readonly></lightning-input>
+                                                            </template>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <template lwc:if={isEditable}>
+                                                                <input type="text" readonly class="slds-size_1-of-1 dropdown-input" value="" data-idx={idx} data-type="bonus" onclick={toggleDropdown} onblur={onBlur}>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <lightning-input type="text" name="Combobox"
+                                                                    value="" variant="label-hidden" readonly></lightning-input>
+                                                            </template>
+                                                        </template>
+                                                        <template lwc:if={bonus.isDropdown}>
+                                                            <div style="position: relative;">
+                                                                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-truncate dropdown slide-down">
+                                                                    <template for:each={bonusFilteredOptions} for:item="option">
+                                                                        <button key={option.itemId} onclick={dropdownClick} data-unit={option.unit}
+                                                                            data-type="bonus" data-idx={idx} data-id={option.itemId}
+                                                                            data-productid={option.productId} data-programid={option.programId} data-label={option.label}
+                                                                            data-amount={option.amount} data-manager={option.manager}
+                                                                            class="slds-size_1-of-1 slds-p-around_x-small">{option.label}</button>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                    <template lwc:if={isDealer}>
+                                                        <div class="slds-size_4-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <lightning-input type="text" name="Description"
+                                                                placeholder="Enter Description" value={bonus.description}
+                                                                data-idx={idx} data-type="bonus" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div class="slds-size_3-of-12 slds-p-right_medium" style="width: 200px;">
+                                                            <lightning-input  type="text" name="Description"
+                                                                placeholder="Enter Description" value={bonus.description}
+                                                                data-idx={idx} data-type="bonus" variant="label-hidden" onchange={onDescriptionChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                        <lightning-input type="number" name="Amount" title={bonus.amount}
+                                                            value={bonus.amount} data-idx={idx} formatter="currency"
+                                                            step="0.01" variant="label-hidden" data-type="bonus"
+                                                            onchange={onRebateAmountChange} disabled></lightning-input>
+                                                    </div>
+                                                    <template if:false={isDealer}>
+                                                        <div class="slds-size_1-of-12 slds-p-right_medium" style="width: 150px;">
+                                                            <lightning-input type="number" name="Adjusted" title={bonus.manager}
+                                                                value={bonus.manager} data-idx={idx} formatter="currency"
+                                                                step="0.01" variant="label-hidden" data-type="bonus"
+                                                                onchange={onMangerAmountChange}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <div class="slds-size_3-of-12" style="width: 400px;">
+                                                        <div class="slds-grid slds-wrap">
+                                                            <template if:false={bonus.attachment}>
+                                                                <template lwc:if={bonus.requiredFile}>
+                                                                    <input type="file" class="slds-size_1-of-2 slds-p-right_medium" data-idx={idx} data-type="bonus" onchange={onFileChange}>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <input type="file" class="slds-size_1-of-2 slds-p-right_medium" data-idx={idx} data-type="bonus" onchange={onFileChange} required>
+                                                                </template>
+                                                            </template>
+                                                            <template if:true={bonus.attachment}>
+                                                                <div class="slds-grid slds-size_1-of-2 link">
+                                                                    <template lwc:if={bonus.imgUrl}>
+                                                                        <a class="slds-size_3-of-4 slds-truncate" data-type="bonus" data-idx={idx} href={bonus.imgUrl}>{bonus.attachment}</a>
+                                                                    </template>
+                                                                    <template lwc:else>
+                                                                        <a class="slds-size_3-of-4 slds-truncate" data-type="bonus" data-idx={idx} onclick={onAttachmentDownload}>{bonus.attachment}</a>
+                                                                    </template>
+                                                                    <template lwc:if={isEditable}>
+                                                                        <button class="delete-file" data-idx={idx} onclick={onDeleteFileClcik}>X</button>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                            <div class="slds-size_1-of-2 slds-p-right_medium slds-p-right_medium">
+                                                                <template lwc:if={isDealer}>
+                                                                    <lightning-combobox
+                                                                        name="Status"
+                                                                        variant="label-hidden"
+                                                                        value={bonus.status}
+                                                                        data-idx={idx}
+                                                                        data-type="bonus"
+                                                                        placeholder="Select Status"
+                                                                        options={statusOptions}
+                                                                        onchange={onStatusChange}
+                                                                        disabled></lightning-combobox>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <lightning-combobox
+                                                                        name="Status"
+                                                                        variant="label-hidden"
+                                                                        value={bonus.status}
+                                                                        data-idx={idx}
+                                                                        data-type="bonus"
+                                                                        placeholder="Select Status"
+                                                                        options={statusOptions}
+                                                                        onchange={onStatusChange}></lightning-combobox>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <template lwc:if={isEditable}>
+                                                        <div class="slds-p-right_medium">
+                                                            <lightning-button-icon data-idx={idx} data-id={bonus.itemId} data-productid={bonus.productId}
+                                                                icon-name="utility:delete" alternative-text="Delete"
+                                                                title="Delete" data-type="bonus" data-programid={bonus.programId}
+                                                                onclick={onDeleteClick}></lightning-button-icon>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <!-- <div class="slds-size_1-of-1 slds-p-around_large">
+                                            <template lwc:if={isEditable}>
+                                                <template if:true={bonusIsAddButtonTrue}>
+                                                    <button class="slds-box slds-box_small" data-type="bonus" onclick={onAddRebateClick}>+ Add bonus</button>
+                                                </template>
+                                            </template>
+                                        </div> -->
+                                    </template>
+                                    <div class="slds-grid slds-size_1-of-1 slds-border_top card-bottom-wrap">
+                                        <div class="slds-grid slds-size_1-of-1 slds-p-around_large slds-border_right card-bottom">
+                                            <div class="slds-align_absolute-center">
+                                                <div>Total Requested Amount:</div>
+                                                <div class="slds-m-left_x-small">${bonusTotalAmount}</div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-size_1-of-1 slds-p-around_large card-bottom">
+                                            <lightning-radio-group name="radioGroup-02" variant="label-hidden"
+                                                options={bonusRadioOptions} value={bonusRadioValue} type="radio"
+                                                data-type="bonus" onchange={onRadioChange}>
+                                            </lightning-radio-group>
+                                        </div>
+                                    </div>
+                                    <!-- 로딩 스피너 -->
+                                    <template if:true={isLoadingData}>
+                                        <div class="spinner">
+                                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                </div>
+                            </lightning-accordion-section>
+                            <!-- Accordaion C End -->
+                        </lightning-accordion>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout-item>
+            <lightning-layout-item flexibility="auto" padding="around-small" size="12">
+                <div class="page-footer page-section">
+                    <div class="slds-grid">
+                        <template if:false={isSubmitButtom}>
+                            <button class="slds-button slds-button_brand" onclick={onSubmitClick} disabled>Submit</button>
+                        </template>
+                        <template if:true={isSubmitButtom}>
+                            <button class="slds-button slds-button_brand" onclick={onSubmitClick}>Submit</button>
+                        </template>
+                        <!-- <button class="slds-button slds-button_text-destructive">Discard</button> -->
+                    </div>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <!-- 로딩 스피너 -->
+        <template if:true={isLoading}>
+            <div class="spinner">
+                <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+            </div>
+        </template>
+    </div>
+</template>

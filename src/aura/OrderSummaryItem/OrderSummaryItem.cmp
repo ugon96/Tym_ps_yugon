@@ -1,0 +1,158 @@
+<!--
+ - Created by yghwang on 2023-10-13.
+ -->
+
+<aura:component description="OrderSummaryItem" controller="OrderSummaryItemController"
+                implements="flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable,force:hasSObjectName,flexipage:availableForRecordHome,lightning:actionOverride,forceCommunity:availableForAllPageTypes"
+                access="global">
+
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+
+    <aura:attribute name="objSummary" type="Object" default=""/>
+    <aura:attribute name="imageUrl" type="String" default=""/>
+
+    <div class="slds-p-around_xxx-small summary-item">
+        <lightning:layout multipleRows="true">
+            <lightning:layoutItem size="3">
+                <div class="slds-p-around_xxx-small">
+                    <aura:if isTrue="{!and(v.imageUrl != null, v.imageUrl != '')}">
+                        <img class="image-container slds-text-align_center" src="{!v.imageUrl}"/>
+                        <aura:set attribute="else">
+                            <div class="image-container slds-text-align_center slds-align-middle">
+                                <p class="slds-align-middle">No Tractor Image</p>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                </div>
+            </lightning:layoutItem>
+            <lightning:layoutItem size="9">
+                <div class="slds-p-around_xxx-small order-item-list-box">
+                    <lightning:layout multipleRows="true">
+                        <!--  Model -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Model</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <p class="summary-item-content">{!v.objSummary.objTractor.label}</p>
+                        </lightning:layoutItem>
+                        <!--  Configuration -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Configuration</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <aura:if isTrue="{!v.objSummary.objTractor.label == 'Implements/Tires'}">
+                                <p class="summary-item-content">None</p>
+                                <aura:set attribute="else">
+                                    <p class="summary-item-content">{!v.objSummary.objTractor.configName}</p>
+                                </aura:set>
+                            </aura:if>
+
+                        </lightning:layoutItem>
+
+                        <!--  Tires -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Tires</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <aura:if isTrue="{!v.objSummary.objTires != null}">
+                                <p class="summary-item-content">{!v.objSummary.objTires.label}</p>
+                                <aura:set attribute="else">
+                                    <p class="summary-item-content">None - None</p>
+                                </aura:set>
+                            </aura:if>
+                        </lightning:layoutItem>
+
+                        <!-- Loader -->
+                        <aura:if isTrue="{!v.objSummary.objLoader != null}">
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                                <p class="summary-item-content">Loader</p>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                                <p class="summary-item-content">{!v.objSummary.objLoader.label}</p>
+                            </lightning:layoutItem>
+                        </aura:if>
+
+                        <!-- Mower -->
+                        <aura:if isTrue="{!v.objSummary.objMower != null}">
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                                <p class="summary-item-content">Mower</p>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                                <p class="summary-item-content">{!v.objSummary.objMower.label}</p>
+                            </lightning:layoutItem>
+                        </aura:if>
+
+                        <!--  Backhoe  -->
+                        <aura:if isTrue="{!v.objSummary.objBackhoe != null}">
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                                <p class="summary-item-content">Backhoe</p>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                                <p class="summary-item-content">{!v.objSummary.objBackhoe.label}</p>
+                            </lightning:layoutItem>
+                        </aura:if>
+
+                        <!--  Options -->
+                        <aura:if isTrue="{!v.objSummary.listOptions != null}">
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                                <p class="summary-item-content">Options</p>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                                <aura:iteration items="{!v.objSummary.listOptions}" var="option">
+                                    <p class="summary-item-content">{!option.label}</p>
+                                </aura:iteration>
+                            </lightning:layoutItem>
+                        </aura:if>
+
+                        <!--  Quantity -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Quantity</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <p class="summary-item-content">{!v.objSummary.qty}</p>
+                        </lightning:layoutItem>
+
+                        <!--  Notes -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Notes</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <p class="summary-item-content">{!v.objSummary.notes}</p>
+                        </lightning:layoutItem>
+
+                        <!--  PO Number -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">P.O. Number</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <p class="summary-item-content">{!v.objSummary.poNumber}</p>
+                        </lightning:layoutItem>
+
+                        <!--  Retailed -->
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Retailed</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <p class="summary-item-content">
+                                <lightning:input disabled="true" label="isRetailed" type="checkbox"
+                                                 variant="label-hidden"
+                                                 name="isRetailed" checked="{!v.objSummary.isRetailed}"/>
+                            </p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-title" size="4">
+                            <p class="summary-item-content">Subtotal</p>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_xxx-small order-summary-item" size="8">
+                            <p class="summary-item-content">
+                                <lightning:formattedNumber value="{!v.objSummary.subtotal}"
+                                                           style="currency"
+                                                           currencyCode="USD"
+                                                           step=".01"/>
+                            </p>  
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </div>
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+</aura:component>

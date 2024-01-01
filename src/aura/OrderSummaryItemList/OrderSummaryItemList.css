@@ -1,0 +1,12 @@
+/**
+ * Created by yghwang on 2023-10-13.
+ */
+
+.THIS {
+}
+.THIS .slds-card__body{
+    display:block;
+    overflow:auto;
+    width:100%;
+    height:fit-content;
+}

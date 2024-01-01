@@ -1,0 +1,113 @@
+/*************************************************************
+ * @author : th.kim
+ * @date : 2023-12-07
+ * @group : 
+ * @group-content : 
+ * @description : 
+==============================================================
+ * Ver          Date            Author          Modification
+   1.0          2023-12-07      th.kim         Initial Version
+**************************************************************/
+.title-box {
+    margin: auto;
+}
+
+.btn-grp button {
+    border: 0;
+    border-radius: 15px;
+    background: #4D4D4D;
+    color: white;
+    transition: all linear 0.2s;
+    &:hover {
+        background: rgb(235, 0, 40);
+    }
+}
+
+.active {
+    background: rgb(235, 0, 40) !important;
+}
+
+.body-box {
+    margin: auto;
+}
+
+.contents {
+    border: solid 1px lightgray;
+    border-radius: 5px;
+    cursor: pointer;
+    &:hover {
+        background: lightgray;
+    }
+}
+
+.img-box {
+    max-height: 222px;
+}
+
+.img-box img {
+    height: 222px;
+    border-radius: 5px 5px 0 0;
+    object-fit: cover;
+}
+
+.card {
+    min-height: 220px;
+}
+
+.card div {
+    max-height: 80px;
+    overflow-y: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-body {
+    font-weight: 500;
+}
+
+.card-title, .card-body {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.info-box {
+    align-items: center;
+}
+
+.info-box .date {
+    color: gray;
+}
+
+/* PC, Mobile 화면 체크 */
+@media screen and (min-width: 1024px) {
+    .contents-box {
+        width: 33.3333333333%;
+    }
+
+    .body-box {
+        width: 66.66666666666667%;
+    }
+}
+
+@media screen and (max-width: 1023px) {
+    .contents-box {
+        width: 50%;
+    }
+
+    .body-box {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 540px) {
+    .contents-box {
+        width: 100%;
+    }
+
+    .body-box {
+        width: 100%;
+    }
+}

@@ -1,0 +1,359 @@
+<!--
+ - Created by 천유정 on 2023-11-29.
+ -->
+
+<aura:component description="PartsOrderItemCreate_Grid"
+                controller="PartsOrderItemCreate_GridController"
+                implements="force:appHostable,force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global">
+    <!-- Design 용도 -->
+    <aura:import library="lightning:confirm" property="LightningConfirm" />
+    <aura:attribute name="setHeader"            type="String"   default="Shopping Cart"/>
+    <aura:attribute name="setIconName"          type="String"   default="standard:webcart"/>
+
+    <!-- DataTable 용도 -->
+    <aura:attribute name="objPartsOrder"             type="PartsOrder__c"/>
+    <aura:attribute name="priceList"                 type="String"/>
+    <aura:attribute name="factor"                    type="Integer"/>
+
+    <!-- Table Column 값 지정 용도 -->
+    <aura:attribute name="TableDisplayList"         type="List"     default=""/>
+
+    <!-- Data (Default) -->
+    <aura:attribute name="listPartsOrderItem"                 type="List"     default="[]"/>
+
+    <!-- Data (Add/Edit) -->
+    <aura:attribute name="listPartsOrderItemDeleted"                 type="List"     default="[]"/>
+
+    <aura:attribute name="draftValueMap"            type="Map"      default="{}"/>
+    <aura:attribute name="draftValues"              type="Object"   default="[]"/>
+    <aura:attribute name="dataIdx"                  type="Integer"/>
+
+    <!-- Data (Footer의 Total 계산을 위한 값) -->
+    <aura:attribute name="TotalPrice"  type="Integer"/>
+    <aura:attribute name="discount"    type="String"    description="Discount Option"/>
+    <aura:attribute name="discountRate"    type="Integer"    description=""/>
+    <aura:attribute name="orderType"                 type="String"/>
+    <aura:attribute name="orderTypeRate"    type="Integer"    description=""/>
+
+    <!-- 수정/삭제 불가 Flag값-->
+    <aura:attribute name="isAvailableDelete"          type="Boolean"    default="false"     description="Add/Edit 버튼을 눌렀는지 여부"/>
+    <aura:attribute name="isPartnerUser"              type="Boolean"    default="false"     description="파트너 프로필 사용자인지 여부"/>
+    <aura:attribute name="isAdministratorUser"        type="Boolean"    default="false"     description="시스템 어드민 사용자인지 여부"/>
+
+    <!-- Grid 화면에서 수정/삭제 불가 실질적 Setting 값-->
+    <aura:attribute name="isClickedAddEdit"           type="Boolean"    default="false"     description="Add/Edit 버튼을 눌렀는지 여부"/>
+    <aura:attribute name="isAbleClickAddEdit"         type="Boolean"    default="true"      description="Add/Edit 버튼을 클릭할 수 있는지 여부"/>
+    <aura:attribute name="isAbleClickCheckout"        type="Boolean"    default="true"      description="Checkout 버튼을 클릭할 수 있는지 여부"/>
+
+    <!-- Validation 용도 -->
+    <aura:attribute name="IsEmpty"              type="Boolean"  default="false"/>
+    <aura:attribute name="statusMsg"            type="String"   default="None"/>
+    <aura:attribute name="lastUpdate"           type="String"/>
+    <aura:attribute name="toggleSpinner"        type="Boolean"  default="false"/>
+
+    <!-- DN_Paging 용도 -->
+    <aura:attribute name="pageNumberParts"               type="Integer" default="1"      description="using for store page Number" />
+    <aura:attribute name="pageParts"                     type="Integer"                  description="using for store page Number" />
+    <aura:attribute name="pagesParts"                    type="Integer"                  description="using for store All Pages page Number" />
+    <aura:attribute name="totalParts"                    type="Integer"                  description="total records count store " />
+    <aura:attribute name="maxPageParts"                  type="Integer" default="1"      description=""/>
+    <aura:attribute name="pageRecordParts"          type="List"    default="[]"     description="DN_Paging으로 분기 처리된 Parts 목록"        access="global"/>
+
+    <!-- Standard Record Edit 감지하고 Refresh -->
+    <aura:handler event="force:refreshView" action="{!c.fnInit}" />
+
+    <!-- This attribute will hold the update records from data table-->
+    <aura:attribute name="updatedRecord" type="Object[]" />
+
+    <!-- DataTable Infinite 로딩용도-->
+    <aura:attribute name="listCurrentData"      type="List" default="[]"/>
+    <aura:attribute name="bEnableLoading"       type="Boolean"  default="false" />
+    <aura:attribute name="totalRows"            type="Integer" />
+    <aura:attribute name="currentRows"          type="Integer" default="0"/>
+    <aura:attribute name="loadMoreRows"         type="Integer" default="10"/>
+    <aura:attribute name="loadMoreStatus"       type="String"/>
+    <aura:attribute name="recordId"            type="String"/>
+    <aura:attribute name="mouseOver" type="boolean" />
+
+    <!-- Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+    <aura:handler name="lookupSelected" event="c:DN_LookupSelected_evt" action="{!c.fnHandleSelected}"/>
+    <aura:handler name="selectedLookupRemoved" event="c:DN_LookupRemoved_evt" action="{!c.fnHandelRemoved}"/>
+    <aura:handler name="change" value="{!v.pageNumberParts}" action="{!c.fnRenderPage}" />
+
+    <div class="slds-card">
+        <div class="slds-page-header">
+            <aura:if isTrue="{!v.toggleSpinner}">
+                <lightning:spinner variant="brand" size="medium" />
+            </aura:if>
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                      <span class="slds-icon_container slds-m-top_xxx-small" title="">
+                           <lightning:icon iconName="{!v.setIconName}" size=""/>
+                      </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <h1>
+                            <span class="slds-page-header__title slds-align-middle slds-m-top_xx-small" title="{!v.setHeader}" style="font-size : 18px;">
+                                {!v.setHeader}
+                            </span>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-page-header__col-actions">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <aura:if isTrue="{!v.isAbleClickAddEdit == true}">
+                                <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                                    <lightning:button label="Add to Cart" onclick="{!c.fnClickAddEdit}" variant="neutral" iconName="utility:add"/>
+                                    <aura:set attribute="else">
+                                        <lightning:button label="Cancel" onclick="{!c.fnClickAddEdit}" variant="neutral"/>
+                                        <lightning:button label="Save" onclick="{!c.fnSave}" variant="brand"/>
+                                    </aura:set>
+                                </aura:if>
+                            </aura:if>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <!--Parts-->
+            <article class="slds-card slds-card_boundary">
+                <div class="slds-card__header slds-grid">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <span>Parts</span>
+                            </h2>
+                        </div>
+                        <aura:if isTrue="{!v.isClickedAddEdit}">
+                            <div class="">
+                                <lightning:button label="Add" onclick="{!c.fnAddParts}" variant="neutral"/>
+                            </div>
+                        </aura:if>
+                    </header>
+                </div>
+                <div class="slds-card__body slds-card__body_inner scroll-setting">
+                    <lightning:layoutItem size="12" class="slds-p-right_small slds-p-left_small">
+                        <div class="slds-section slds-is-open">
+                            <div aria-hidden="false" class="slds-section__content">
+                                <!-- slds-table_fixed-layout 쓰면 DN_Lookup에서 Layout 깨짐-->
+                                <lightning:recordEditForm objectApiName="PartsOrderItem__c">
+                                    <div class= "custom-dropbox slds-scrollable_x slds-scrollable_y">
+                                        <lightning:recordEditForm objectApiName="PartsOrderItem__c">
+                                            <table  aria-multiselectable="false" role="grid" class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_col-bordered cTable" >
+                                                <colgroup>
+                                                    <col width="5%"/>       <!--No.-->
+                                                    <col width="10%"/>      <!--Order Qty-->
+                                                    <col width="19%"/>      <!--Part No-->
+                                                    <col width="19%"/>      <!--Supplied Part No-->
+                                                    <col width="23%"/>      <!--Description-->
+                                                    <col width="15%"/>      <!--Price-->
+                                                    <col width="15%"/>      <!--Stock-->
+<!--                                                    <col width="15%"/>      &lt;!&ndash;Applied Date&ndash;&gt;-->
+                                                </colgroup>
+                                                <thead>
+                                                <tr class="slds-line-height_reset">
+                                                    <th class="slds-cell-wrap" style="text-align:center;">{!if(v.isClickedAddEdit == true, 'Del', 'No.')}</th>
+                                                    <th class="slds-cell-wrap" style="text-align:center;">Order Qty</th>
+                                                    <th class="slds-cell-wrap" style="text-align:center;">Part No</th>
+                                                    <th class="slds-cell-wrap" style="text-align:center;">Supplied Part No</th>
+                                                    <th class="slds-cell-wrap" style="text-align:center;">Description</th>
+                                                    <th class="slds-cell-wrap" style="text-align:center;">Price</th>
+                                                    <th class="slds-cell-wrap" style="text-align:center;">Stock</th> 
+<!--                                                    <th class="slds-cell-wrap">Applied Date</th>-->
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <aura:if isTrue="{!v.pageRecordParts.length > 0}">
+                                                    <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                                                        <!--Default-->
+                                                        <aura:iteration items="{!v.pageRecordParts}" var="obj" indexVar="idx">
+                                                            <tr aria-selected="false" class="slds-hint-parent">
+                                                                <td class="nolabel slds-cell-wrap" title="Sequence">
+                                                                    {!((v.pageNumberParts-1) * 15) + idx+1} 
+                                                                </td>
+                                                                <td class="nolabel slds-cell-wrap" title="Order Qty" style="background-color:#FFE0C0">
+                                                                    {!obj.Quantity__c}
+                                                                </td>
+                                                                <td class="nolabel slds-cell-wrap" title="Part Number">
+                                                                    {!obj.ProductName}
+                                                                </td>
+                                                                <td class="nolabel slds-cell-wrap" title="Supplied Part No">
+                                                                    {!obj.ReplacementName}
+                                                                </td>
+                                                                <td class="nolabel slds-cell-wrap" title="Description">
+                                                                    {!obj.fm_PartsDescription__c}
+                                                                </td>
+                                                                <td class="nolabel slds-cell-wrap" title="Price">
+                                                                    <lightning:formattedNumber style="currency" currencyCode="USD" step=".01" value="{!obj.Price__c}" />
+                                                                </td>
+                                                                <td class="nolabel slds-cell-wrap" title="Stock">
+                                                                    {!obj.fm_OnHand__c}
+                                                                </td>
+<!--                                                                <td class="nolabel slds-cell-wrap" title="Applied Date">-->
+<!--                                                                    {!obj.ReplacementName}-->
+<!--                                                                </td>-->
+                                                            </tr>
+                                                        </aura:iteration>
+                                                        <!--Add/Edit-->
+                                                        <aura:set attribute="else">
+                                                            <aura:iteration items="{!v.listPartsOrderItem}" var="obj" indexVar="idx">
+                                                                <tr aria-selected="false" class="slds-hint-parent">
+                                                                    <td class="nolabel slds-cell-wrap" title="Sequence">
+                                                                        <a onclick="{!c.handleDeleteParts}" data-record="{!idx}">
+                                                                            <lightning:icon iconName="utility:delete" size="xx-small" alternativeText="Delete"/>
+                                                                            <span class="slds-assistive-text">Delete</span>
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="nolabel slds-cell-wrap" title="Order Qty" style="background-color:#FFE0C0">
+                                                                        <lightning:inputField fieldName="Quantity__c" value="{!obj.Quantity__c}" variant="label-hidden" class="{!'Parts-Quantity-' + idx}" onchange="{!c.fnChangeValue}" disabled="{!if(v.isAdministratorUser, false, if(v.isPartnerUser, false, true))}"/>
+                                                                    </td>
+                                                                    <td class="nolabel slds-cell-wrap" title="Part Number">
+                                                                        <lightning:inputField accesskey="{!idx}" fieldName="ProductId__c" value="{!obj.ProductId__c}" class="{!'Parts-Parts-' + idx}" variant="label-hidden" onchange="{!c.fnChangeParts}"/>
+                                                                    </td>
+                                                                    <td class="nolabel slds-cell-wrap" title="Supplied Part No">
+                                                                        <aura:if isTrue="{!if(v.isPartnerUser, true, false)}">
+                                                                            {!obj.ReplacementName}
+                                                                            <aura:set attribute="else">
+                                                                                <lightning:inputField accesskey="{!idx}" fieldName="Replacement__c" value="{!obj.Replacement__c}"  class="{!'Parts-Replacement-' + idx}" variant="label-hidden" onchange="{!c.fnChangeParts}"/> 
+                                                                            </aura:set>
+                                                                        </aura:if>
+                                                                    </td>
+                                                                    <td class="nolabel slds-cell-wrap" title="Description">
+                                                                        {!obj.ProductName}
+                                                                    </td>
+                                                                    <td class="nolabel slds-cell-wrap" title="Price">
+                                                                        <lightning:formattedNumber style="currency" currencyCode="USD" step=".01" value="{!obj.Price__c}" />
+                                                                    </td>
+                                                                    <td class="nolabel slds-cell-wrap" title="Stock">
+                                                                        {!obj.fm_OnHand__c}
+                                                                    </td>
+<!--                                                                    <td class="nolabel slds-cell-wrap" title="Applied Date">-->
+<!--                                                                        {!obj.ReplacementName}-->
+<!--                                                                    </td>-->
+                                                                </tr>
+                                                            </aura:iteration>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                    <aura:set attribute="else">
+                                                        <tr>
+                                                            <td colspan="11" style="height:5rem; text-align:center">
+                                                                There is nothing to display.
+                                                            </td>
+                                                        </tr>
+                                                    </aura:set>
+                                                </aura:if>
+                                                </tbody>
+                                            </table>
+                                        </lightning:recordEditForm>
+                                    </div>
+                                    <aura:if isTrue="{!if(!v.isClickedAddEdit == false, false, v.totalParts > 5)}">
+                                        <div class="slds-col slds-align_absolute-center slds-p-top_medium">
+                                            <c:DN_Paging currentPageNumber="{!v.pageNumberParts}" maxPageNumber="{!v.maxPageParts}" />
+                                        </div>
+                                    </aura:if>
+                                </lightning:recordEditForm>
+                            </div>
+                        </div>
+                    </lightning:layoutItem>
+                    <aura:if isTrue="{!v.isClickedAddEdit == true}">
+                        <div style="display:flex; flex-direction:row-reverse; padding-top:0.5rem" class="slds-form-element_horizontal">
+                            <div style="width:32rem">
+                                <article style="width:100%" class="slds-card slds-card_boundary slds-size_1-of-2 slds-color__background_gray-3">
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-col slds-size_2-of-2" style="padding-bottom:0.5rem"><b>Total Line Number : {!v.listPartsOrderItem.length}</b></div>
+                                            <div class="slds-col slds-size_1-of-2">Subtotal :</div>
+                                            <div class="slds-col slds-size_1-of-2"><lightning:formattedNumber value="{!v.TotalPrice}" style="currency" currencyCode="USD"/></div>
+                                            <div class="slds-col slds-size_1-of-2">Discount :</div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <table>
+<!--                                                    <aura:if isTrue="{!v.discountRate > 0}">-->
+<!--                                                        <tr>-->
+<!--                                                            <td>{!v.discountRate}%</td>-->
+<!--                                                            <td><span style="color:grey">{!v.discount}</span></td>-->
+<!--                                                            <td><lightning:helptext-->
+<!--                                                                        content="Within 3 Days : 0% discount / Within 7 Days : 7% discount / Within 30 Days : 17% discount"-->
+<!--                                                                /></td>-->
+<!--                                                        </tr>-->
+<!--                                                    </aura:if>-->
+                                                    <aura:if isTrue="{!v.orderTypeRate > 0}">
+                                                        <tr>
+                                                            <td>{!v.orderTypeRate}%</td>
+                                                            <td><span style="color:grey">{!v.orderType}</span></td>
+                                                            <td><lightning:helptext
+                                                                        content="Level 1 : Min Line Items 10 &amp; Min Order $2,500 / Level 2 : Min Line Items 15 &amp; Min Order $5,000 / Level 3 : Min Line Items 20 &amp; Min Order $10,000"
+                                                                /></td>
+                                                        </tr>
+                                                    </aura:if>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <footer class="slds-card__footer slds-text-align_left">
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-col slds-size_1-of-2"><b>Estimated :</b></div>
+<!--                                            <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!(v.TotalPrice * (100 - (v.discountRate + v.orderTypeRate)) * 0.01)}" style="currency" currencyCode="USD"/></b></div>-->
+                                            <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!(v.TotalPrice * (100 - (v.orderTypeRate)) * 0.01)}" style="currency" currencyCode="USD"/></b></div>
+                                        </div>
+                                    </footer>
+                                </article>
+                            </div>
+                        </div>
+                    </aura:if>
+                </div>
+            </article>
+            <aura:if isTrue="{!v.isClickedAddEdit == false}">
+                <div style="display:flex; flex-direction:row-reverse; padding-top:0.5rem" class="slds-form-element_horizontal">
+                    <div style="width:32rem">
+                        <article style="width:100%" class="slds-card slds-card_boundary slds-size_1-of-2 slds-color__background_gray-3">
+                            <div class="slds-card__body slds-card__body_inner">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_2-of-2" style="padding-bottom:0.5rem"><b>Total Line Number : {!v.listPartsOrderItem.length}</b></div>
+                                    <div class="slds-col slds-size_1-of-2">Subtotal :</div>
+                                    <div class="slds-col slds-size_1-of-2"><lightning:formattedNumber value="{!v.objPartsOrder.ru_TotalAmount__c}" style="currency" currencyCode="USD"/></div>
+                                    <div class="slds-col slds-size_1-of-2">Discount :</div> 
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <table>
+<!--                                            <aura:if isTrue="{!v.discountRate > 0}">-->
+<!--                                                <tr>-->
+<!--                                                    <td>{!v.discountRate}%</td>-->
+<!--                                                    <td><span style="color:grey">{!v.discount}</span></td>-->
+<!--                                                    <td><lightning:helptext-->
+<!--                                                                content="Within 3 Days : 0% discount / Within 7 Days : 7% discount / Within 30 Days : 17% discount"-->
+<!--                                                        /></td>-->
+<!--                                                </tr>-->
+<!--                                            </aura:if>-->
+                                            <aura:if isTrue="{!v.orderTypeRate > 0}">
+                                                <tr>
+                                                    <td>{!v.orderTypeRate}%</td>
+                                                    <td><span style="color:grey">{!v.orderType}</span></td>
+                                                    <td><lightning:helptext
+                                                                content="Level 1 : Min Line Items 10 &amp; Min Order $2,500 / Level 2 : Min Line Items 15 &amp; Min Order $5,000 / Level 3 : Min Line Items 20 &amp; Min Order $10,000"
+                                                        /></td>
+                                                </tr>
+                                            </aura:if>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <footer class="slds-card__footer slds-text-align_left">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_1-of-2"><b>Estimated :</b></div>
+<!--                                    <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!(v.objPartsOrder.ru_TotalAmount__c * (100 - (v.discountRate + v.orderTypeRate)) * 0.01)}" style="currency" currencyCode="USD"/></b> ({!v.discountRate + v.orderTypeRate}% off)</div>-->
+                                    <div class="slds-col slds-size_1-of-2"><b><lightning:formattedNumber value="{!(v.objPartsOrder.ru_TotalAmount__c * (100 - v.orderTypeRate) * 0.01)}" style="currency" currencyCode="USD"/></b> ({!v.orderTypeRate}% off)</div>
+                                </div>
+                            </footer>
+                        </article>
+                        <lightning:button class="slds-m-top_small custom-button" variant="brand" name="Check out" label="{!if(v.isAbleClickCheckout, 'Check out', 'Already checked out')}" onclick="{!c.fnCheckout}" iconName="utility:checkout" disabled="{!if(v.isAbleClickCheckout, false, true)}"/>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

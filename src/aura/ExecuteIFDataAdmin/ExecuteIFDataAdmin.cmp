@@ -1,0 +1,100 @@
+<!--
+ - Created by nhkim on 2023-12-06.
+ -->
+
+<aura:component description="ExecuteIFDataAdmin" implements="force:appHostable">
+    <aura:html tag="style">
+        tr {
+            border: 1px solid black;
+        }
+        td {
+            border: 1px solid black;
+            padding: 1rem 1rem 1rem 1rem;
+        }
+    </aura:html>
+
+    <lightning:card title="I/F 전체 조회">
+        <table style="border: 1px solid black; border-collapse: collapse; width: 50%;">
+            <tr>
+                <td>
+                    Business Partner
+                </td>
+                <td>
+                    <lightning:button label="Business Partner 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Address
+                </td>
+                <td>
+                    <lightning:button label="Address 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Contact
+                </td>
+                <td>
+                    <lightning:button label="Contact 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Item
+                </td>
+                <td>
+                    <lightning:button label="Item 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Price List Master
+                </td>
+                <td>
+                    <lightning:button label="Price List Master 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Price List
+                </td>
+                <td>
+                    <lightning:button label="Price List 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order
+                </td>
+                <td>
+                    <lightning:button label="Order 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Parts Order
+                </td>
+                <td>
+                    <lightning:button label="Parts Order 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    기준정보
+                </td>
+                <td>
+                    <lightning:button label="기준정보 조회"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    부품재고
+                </td>
+                <td>
+                    <lightning:button label="부품재고 조회"/>
+                </td>
+            </tr>
+        </table>
+    </lightning:card>
+</aura:component>

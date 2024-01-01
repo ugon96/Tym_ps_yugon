@@ -1,0 +1,58 @@
+/**
+ * Created by 천유정 on 2023-12-02.
+ */
+
+.THIS {
+}
+
+.THIS .custom-button {
+    width:100%;
+}
+
+.THIS .custom-dropbox .slds-dropdown {
+    position: fixed !important;
+    width: auto;
+}
+.THIS .custom-dropbox .slds-listbox {
+    position: fixed !important;
+    width: auto;
+}
+
+.THIS .table tr th {
+    text-align:center !important;
+}
+
+.THIS .cTable {
+    /*table-layout:fixed;*/
+}
+
+.THIS .cTable tr td th{
+    /*text-overflow: ellipsis;*/
+    /*white-space: nowrap;*/
+}
+
+.THIS .slds-form-element_horizontal {
+    margin : 0 0 0 0;
+    padding : 0 0 0 0;
+}
+
+.THIS .slds-table_cell-buffer tr>th:first-child {
+    padding-left: 0.5rem;
+}
+
+.THIS .slds-table_cell-buffer tr>td:first-child{
+    padding-left: 0.5rem;
+}
+
+.THIS .slds-m-right_xxx-small{
+    display : none !important;
+}
+
+/*
+.THIS .slds-listbox {
+    z-index: 9002;
+    position:fixed;
+}*/
+.THIS .scroll-setting {
+/*    overflow-x : auto;*/
+}

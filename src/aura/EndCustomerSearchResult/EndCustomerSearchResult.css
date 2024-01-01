@@ -1,0 +1,11 @@
+/**
+ * Created by yghwang on 2023-10-05.
+ */
+
+.THIS {
+    width:100%;
+}
+.THIS .slds-modal__container {
+    width:100%;
+    max-width: 70rem;
+}

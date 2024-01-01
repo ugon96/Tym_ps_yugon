@@ -1,0 +1,75 @@
+<!--
+ - Created by yghwang on 2023-10-10.
+ -->
+
+<aura:component description="CreateNewCustomer" controller="CreateNewCustomerController">
+    <aura:attribute name="isShowSpinner" type="Boolean" default="false"/>
+
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    <aura:registerEvent name="closeCreateCustomerEvt" type="c:handleCloseBtnClicked_evt"/>
+    <aura:registerEvent name="createNewCustomerEvt" type="c:handleBtnClicked_evt"/>
+
+    <aura:attribute name="lastName" type="String" default=""/>
+
+    <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading-01"
+             class="slds-modal slds-fade-in-open">
+        <aura:if isTrue="{!v.isShowSpinner}">
+            <lightning:spinner variant="brand" size="medium"/>
+        </aura:if>
+        <div class="slds-modal__container">
+            <div class="slds-modal__header">
+                <lightning:buttonIcon iconName="utility:close"
+                                      onclick="{! c.closeModal }"
+                                      alternativeText="close"
+                                      variant="bare-inverse"
+                                      class="slds-modal__close"/>
+                <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!$Label.c.Create_New_Customer}</h1>
+            </div>
+
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <lightning:layout multipleRows="true">
+
+                    <lightning:layoutItem class="slds-p-around_small" size="6">
+                        <lightning:input aura:id="FirstName" label="First Name" name="First Name"
+                                         type="text"></lightning:input>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-around_small" size="6">
+                        <lightning:input aura:id="LastName" label="Last Name" name="Last Name" required="true" value="{!v.lastName}"
+                                         type="text"></lightning:input>
+                    </lightning:layoutItem>
+
+                    <lightning:layoutItem class="slds-p-around_small" size="6">
+                        <lightning:input aura:id="CustomerHomePhone" label="Customer Home Phone"
+                                         name="Customer Home Phone"
+                                         type="text"></lightning:input>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-around_small" size="6">
+                        <lightning:input aura:id="CustomerMobilePhone" label="Customer Mobile Phone"
+                                         name="Customer Mobile Phone"
+                                         type="text"></lightning:input>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-around_small" size="12">
+                        <lightning:input aura:id="CustomerEmailAddress" label="Customer Email Address"
+                                         name="Customer Email Address"
+                                         type="text"></lightning:input>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="slds-p-around_small" size="12">
+                        <lightning:input aura:id="CustomerAddress"
+                                         label="Customer Address(Street, City, State Zip)" name="Customer Address"
+                                         type="text"></lightning:input>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            <div class="slds-modal__footer">
+                <lightning:button class="slds-button slds-button_neutral" onclick="{!c.closeModal}">{!$Label.c.Cancel}
+                </lightning:button>
+                <lightning:button class="slds-button slds-button_brand"
+                                  onclick="{!c.handleSaveBtnClicked}">{!$Label.c.Save}
+                </lightning:button>
+            </div>
+        </div>
+    </section>
+
+    <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+</aura:component>

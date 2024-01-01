@@ -1,0 +1,6 @@
+<!--
+ - Created by 천유정 on 2023-11-07.
+ -->
+
+<aura:event type="COMPONENT" description="Community_ButtonList_evt">
+</aura:event>

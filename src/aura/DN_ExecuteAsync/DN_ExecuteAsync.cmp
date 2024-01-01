@@ -1,0 +1,448 @@
+<!--
+* ==================================================================================
+*   File Name   : DN_ExecuteAsync.cmp
+*   Author      : Minje.Kim
+*   Date        : 2023.12.07
+*   Description : 비동기 (Batch/Queueable) 클래스 실행 모듈
+*   Modification Log
+* ==================================================================================
+*   Ver     Date          Author          Modification
+* ==================================================================================
+*   1.0     2023.12.07    Minje.Kim    Create
+* ==================================================================================
+-->
+<aura:component implements="force:appHostable" controller="DN_ExecuteAsync">
+
+    <!-- Attribute -->
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    <aura:attribute name="Type" type="String" default="Batch" description="입력된 MA명"/>
+    <aura:attribute name="listQueueable" type="List" description="활동보고 데이터 리스트"/>
+    <aura:attribute name="listBatch" type="List" description="전표처리 데이터리스트 헤더"/>
+    <aura:attribute name="strBatchSize" type="Integer" default="1" description="테이블 정렬 기준"/>
+    <aura:attribute name="strCodeName" type="String" default=""/>
+
+    <aura:attribute name="IF_SFDC_SAP_REQ_BPACCOUNT" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_BPADDRESS" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_CONTACT" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_ITEM" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_PRICELISTMST" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_PRICELISTETR" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_ORDER_PROD" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_ORDER_PARTS" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_AR" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_MASTERDATA" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_PARTSIVT" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_FINISHEDGOODS" type="Object"/>
+    <aura:attribute name="IF_SFDC_SAP_REQ_CREDITMEMO" type="Object"/>				
+    
+    <aura:attribute name="strExecuteConfirm" type="String" default=""/>			
+
+
+
+    <!-- Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+
+
+    <div class="slds-col modal-body scrollable slds-p-around--medium divContent" style="padding:0">
+        <div>
+            <aura:if isTrue="{!v.showSpinner}">
+                <lightning:spinner aura:id="spinner" class="custom-Spinner" alternativeText="Loading" variant="brand" size="medium" />
+            </aura:if>
+            <!-- <div class="slds-page-header">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-media">
+                            <div class="slds-media__body">
+                                <lightning:layout multipleRows="true">
+                                    <lightning:layoutItem size="4" padding="horizontal-small">
+                                        <lightning:select label="구분" value="{!v.Type}" onchange="{!c.fnChangeType}">
+                                            <option value="Queueable">Queueable</option>
+                                            <option value="Batch">Batch</option>
+                                        </lightning:select>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="4" padding="horizontal-small">
+                                        <lightning:select class="custom-form-element" label="Class 명" value="{!v.strCodeName}">
+                                            <aura:iteration items="{! v.Type == 'Queueable' ? v.listQueueable : v.listBatch }" var="option">
+                                                <option text="{!option.label}" value="{!option.value}" selected="{!option.selected}"/>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </lightning:layoutItem>
+                                    <aura:if isTrue="{!v.Type == 'Batch'}">
+                                        <lightning:layoutItem size="4" padding="horizontal-small">
+                                            <lightning:input type="number" min="1" max="200" aura:id="validTarget" class="custom-form-element" label="배치사이즈" value="{!v.strBatchSize}"/>
+                                        </lightning:layoutItem>
+                                    </aura:if>
+                                </lightning:layout>
+                                <br/>
+                                <lightning:layout multipleRows="true">
+                                    <lightning:layoutItem size="12" class="slds-text-align_right">
+                                        <lightning:button variant="success" value="Approve" label="실행" onclick="{!c.fnExecute}" />
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    1. Business Partner (IF_SFDC_SAP_REQ_BPACCOUNT)
+                </h1>
+            </div>                            
+            <div class="slds-card" style="width:70%"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="BP Code (CARDCD)" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_BPACCOUNT" value="{!v.IF_SFDC_SAP_REQ_BPACCOUNT.CARDCD}"
+                            fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 BP Master 트랜잭션 데이터 / ex1) CARDCD : C0001 / ex2) CARDCD : new"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_BPACCOUNT" value="{!v.IF_SFDC_SAP_REQ_BPACCOUNT.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_BPACCOUNT' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_BPACCOUNT" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_BPACCOUNT' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+            </div>
+            <br/>
+
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    2. BPAddress (IF_SFDC_SAP_REQ_BPADDRESS)
+                </h1>
+            </div>       
+            <div class="slds-card" style="width:70%"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="BP Code (CARDCD)" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_BPADDRESS" value="{!v.IF_SFDC_SAP_REQ_BPADDRESS.CARDCD}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 BP Address 트랜잭션 데이터 / ex1) CARDCD : C0001 / ex2) CARDCD : new"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_BPADDRESS" value="{!v.IF_SFDC_SAP_REQ_BPADDRESS.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_BPADDRESS' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_BPADDRESS" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_BPADDRESS' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+             </div>
+            <br/>
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    3. Contact Person (IF_SFDC_SAP_REQ_CONTACT)
+                </h1>
+            </div>     
+            <div class="slds-card" style="width:70%"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="BP Code (CARDCD)" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_CONTACT" value="{!v.IF_SFDC_SAP_REQ_CONTACT.CARDCD}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 Contact Person 트랜잭션 데이터 / ex1) CARDCD : C0001 / ex2) CARDCD : new"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_CONTACT" value="{!v.IF_SFDC_SAP_REQ_CONTACT.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_CONTACT' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_CONTACT" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_CONTACT' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+            </div>
+            <br/>
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    4. Item (IF_SFDC_SAP_REQ_ITEM)
+                </h1>
+            </div>            
+            <div class="slds-card" style="width:70%"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="BP Code (CARDCD)" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_ITEM" value="{!v.IF_SFDC_SAP_REQ_ITEM.ItemCode}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 Item Master 트랜잭션 데이터 / ex1) ItemCode : C000001 / ex2) ItemCode : new"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_ITEM" value="{!v.IF_SFDC_SAP_REQ_ITEM.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="3" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_ITEM' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_ITEM" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_ITEM' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+            </div>
+            <br/>
+
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    5. Price List Master (IF_SFDC_SAP_REQ_PRICELISTMST)
+                </h1>
+            </div>        
+            <div class="slds-card" style="width:70%"> 
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="PriceList" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTMST" value="{!v.IF_SFDC_SAP_REQ_PRICELISTMST.PriceList}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 PriceList 트랜잭션 데이터 / ex1) PriceList : PL00000001 / ex2) PriceList : new / (Factor, Name, Base Price List가 변경된 건)"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTMST" value="{!v.IF_SFDC_SAP_REQ_PRICELISTMST.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="3" padding="horizontal-small"> 
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PRICELISTMST' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_PRICELISTMST" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PRICELISTMST' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+            </div>
+            <br/>
+
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    6. Price List (IF_SFDC_SAP_REQ_PRICELISTETR)
+                </h1>
+            </div>         
+            <div class="slds-card" style="width:70%">    
+                <lightning:layout multipleRows="true">
+                    <!-- 생성자 1 번-->
+                    <lightning:layoutItem size="12" padding="horizontal-small">
+                        <div style="padding:0.3rem; font-size:0.9rem">
+                            <b>● 생성자 1번</b> (PriceList, Count)
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="PriceList" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTETR_1" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.PriceList}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 PriceList 트랜잭션 데이터 / ex1) PriceList : PL00000001 / ex2) PriceList : new / (PriceList(PK)와 BasePriceList의 값이 같은 건만)"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTETR_1" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PRICELISTETR_1' ? 'success' : 'brand'}" name="1" value="IF_SFDC_SAP_REQ_PRICELISTETR" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PRICELISTETR_1' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="7" padding="horizontal-small">
+
+                    </lightning:layoutItem>
+
+                    <lightning:layoutItem size="12" padding="horizontal-small">
+                        <br/>
+                    </lightning:layoutItem>
+                    <!-- 생성자 2번 -->
+                    <lightning:layoutItem size="12" padding="horizontal-small">
+                        <div style="padding:0.3rem; font-size:0.9rem">
+                            <b>● 생성자 2번</b> (PriceList, Count, ItemGroupCode, ItemCode, inputCurrency)
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="PriceList" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTETR_2" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.PriceList}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 PriceList 트랜잭션 데이터 / ex1) PriceList : PL00000001 / ex2) PriceList : new / (PriceList(PK)와 BasePriceList의 값이 같은 건만)"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTETR_2" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="ItemGroupCode" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTETR_2" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.ItemGroupCode}" fieldLevelHelp="null 값인 경우 전체"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="ItemCode" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_PRICELISTETR_2" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.ItemCode}" fieldLevelHelp="null 값인 경우 전체"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="inputCurrency" required="true" type="text" min="1" disabled="true" value="{!v.IF_SFDC_SAP_REQ_PRICELISTETR.inputCurrency}" fieldLevelHelp="USD 고정 (*예약어 사용 불가로 명칭 변경)"/>
+                    </lightning:layoutItem>       
+
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PRICELISTETR_2' ? 'success' : 'brand'}" name="2" value="IF_SFDC_SAP_REQ_PRICELISTETR" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PRICELISTETR_2' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+            </div>
+            <br/>
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    7. Order (IF_SFDC_SAP_REQ_ORDER_PROD)
+                </h1>
+            </div>   
+            <div class="slds-card" style="width:70%">
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="DocNum" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_ORDER_PROD" value="{!v.IF_SFDC_SAP_REQ_ORDER_PROD.DocNum}"
+                        fieldLevelHelp="-all : 전체 데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 Order 트랜잭션 데이터 / ex1) DocNum : 0340302 / ex2) DocNum : new / (1. SFDC OrderType이 'Order' 인 데이터 / 2. Status = Opened 인 데이터)"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_ORDER_PROD" value="{!v.IF_SFDC_SAP_REQ_ORDER_PROD.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="3" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_ORDER_PROD' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_ORDER_PROD" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_ORDER_PROD' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+             </div>
+             <br/>
+
+             <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                 <h1>
+                     8. Parts Order (IF_SFDC_SAP_REQ_ORDER_PARTS)
+                 </h1>
+             </div>            
+             <div class="slds-card" style="width:70%">
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="DocEntry" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_ORDER_PARTS" value="{!v.IF_SFDC_SAP_REQ_ORDER_PARTS.DocEntry}"
+                        fieldLevelHelp="-all : 전체데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 Parts Order트랜잭션 데이터 / ex1) DocEntry : 3939432 / ex2) DocEntry : new / (1. SFDC OrderType이 'PartsOrder' 인 데이터2. Status = Opened 인 데이터)"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_ORDER_PARTS" value="{!v.IF_SFDC_SAP_REQ_ORDER_PARTS.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="3" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_ORDER_PARTS' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_ORDER_PARTS" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_ORDER_PARTS' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>			
+            </div>	
+            <br/>			
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    9. 여신/채권 (IF_SFDC_SAP_REQ_AR)
+                </h1>
+            </div>            
+            <div class="slds-card" style="width:70%">
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="BP Code" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_AR" value="{!v.IF_SFDC_SAP_REQ_AR.BPCode}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_AR" value="{!v.IF_SFDC_SAP_REQ_AR.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_AR' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_AR" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_AR' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>		
+            </div>
+            <br/>	
+    
+            
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    10. 기준정보 (IF_SFDC_SAP_REQ_MASTERDATA)
+                </h1>
+            </div>      
+            <div class="slds-card" style="width:70%">      
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:select label="구분" required="true" aura:id="validTarget_IF_SFDC_SAP_REQ_MASTERDATA" value="{!v.IF_SFDC_SAP_REQ_MASTERDATA.Type}">
+                            <option value="Country">Country (국가코드)</option>
+                            <option value="State">State</option>
+                            <option value="ItemGroupCode">ItemGroupCode (아이템 그룹 코드)</option>
+                        </lightning:select>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_MASTERDATA" value="{!v.IF_SFDC_SAP_REQ_MASTERDATA.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_MASTERDATA' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_MASTERDATA" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_MASTERDATA' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>				
+            </div>
+            <br/>				
+
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    11. 부품 재고 (IF_SFDC_SAP_REQ_PARTSIVT)
+                </h1>
+            </div>            
+            <div class="slds-card" style="width:70%">      
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="ItemCode" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_PARTSIVT" value="{!v.IF_SFDC_SAP_REQ_PARTSIVT.ItemCode}" 
+                         fieldLevelHelp="-all : 전체데이터 / -new : 이전 API 호출 시점부터 현재 호출까지 생성/변경된 부품재고 트랜잭션 데이터 / ex1) ItemCode : ITEM00001 ex2) ItemCode : new"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_PARTSIVT" value="{!v.IF_SFDC_SAP_REQ_PARTSIVT.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PARTSIVT' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_PARTSIVT" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_PARTSIVT' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>				
+            </div>
+            <br/>				
+
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    12. Finished Goods (IF_SFDC_SAP_REQ_FINISHEDGOODS)
+                </h1>
+            </div>        
+            <div class="slds-card" style="width:70%">       
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="12" padding="horizontal-small">
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="ItemCode" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_FINISHEDGOODS" value="{!v.IF_SFDC_SAP_REQ_FINISHEDGOODS.ItemCode}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_FINISHEDGOODS" value="{!v.IF_SFDC_SAP_REQ_FINISHEDGOODS.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_FINISHEDGOODS' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_FINISHEDGOODS" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_FINISHEDGOODS' ? '실행' : '검사'}" onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>				
+            </div>
+            <br/>				
+
+            <div class="slds-notify slds-notify_alert slds-alert_warning custom_alert" role="alert">
+                <h1>
+                    13. A/R Credit Memo (IF_SFDC_SAP_REQ_CREDITMEMO)
+                </h1>
+            </div>       
+            <div class="slds-card" style="width:70%">        
+                <lightning:layout multipleRows="true">
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="BP Code (CARDCD)" required="true" type="text" aura:id="validTarget_IF_SFDC_SAP_REQ_CREDITMEMO" value="{!v.IF_SFDC_SAP_REQ_CREDITMEMO.CARDCD}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="2" padding="horizontal-small">
+                        <lightning:input label="요청개수 (Count)" required="true" type="number" min="1" max="10000" aura:id="validTarget_IF_SFDC_SAP_REQ_CREDITMEMO" value="{!v.IF_SFDC_SAP_REQ_CREDITMEMO.Count}"/>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem size="1" padding="horizontal-small">
+                        <div style="height: 3.4rem; display:flex; align-items:end">
+                            <lightning:button variant="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_CREDITMEMO' ? 'success' : 'brand'}" value="IF_SFDC_SAP_REQ_CREDITMEMO" label="{!v.strExecuteConfirm == 'IF_SFDC_SAP_REQ_CREDITMEMO' ? '실행' : '검사'}"   onclick="{!c.fnExecute}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+                <br/>
+            </div>
+        </div>
+    </div>
+</aura:component>

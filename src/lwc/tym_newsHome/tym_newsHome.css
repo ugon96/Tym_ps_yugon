@@ -1,0 +1,47 @@
+/*************************************************************
+ * @author : th.kim
+ * @date : 2023-12-27
+ * @group : 
+ * @group-content : 
+ * @description : 
+==============================================================
+ * Ver          Date            Author          Modification
+   1.0          2023-12-27      th.kim         Initial Version
+**************************************************************/
+li {
+    align-self: center;
+}
+
+/* li:not(:first-child):before {
+    content: "\2022";
+    margin: 0 5px;
+} */
+
+.contents {
+    background: white;
+    border: solid 1px rgb(244, 244, 244);
+}
+
+.contents > a {
+    color: black;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.non-hover:hover {
+    cursor: context-menu;
+    text-decoration: unset;
+    &:not(a) {
+        background: rgb(235, 0, 40);    
+    }
+}
+
+.non-hover:focus {
+    box-shadow: none;
+    background: rgb(235, 0, 40);
+    border: solid 1px rgb(235, 0, 40);;
+}

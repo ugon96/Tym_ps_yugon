@@ -1,0 +1,75 @@
+/**
+ * Created by 천유정 on 2022-08-17.
+ */
+
+.THIS .custom_comboContainer {
+    display: block;
+}
+.THIS .custom_highlightDark {
+    background-color:#e6e6e6; 
+}
+.THIS .custom-pill {
+    width: 100%;
+}
+.THIS .custom_selection-group {
+    border: 1px solid #dddbda;
+    border-top: 0;
+    border-bottom-left-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+    background-color: white;
+}
+.THIS .custom_multiPillLabel {
+    max-width: 100px;
+}
+.THIS .custom_ul li {
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    transform: none !important; 
+}
+
+/* 모달에서 띄우는 경우 backdrop 계층 효과 */
+.THIS .custom_backdrop {
+    z-index: 9001;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+.THIS .custom_modal {
+    z-index: 9002;
+}
+
+.THIS .custom_search {
+    width: 30%;
+}
+
+.THIS .custom_content {
+    margin-top: 20px;
+}
+
+.THIS .custom_scrollerSize {
+    height: 400px;
+}
+
+.THIS .custom_searchFigure {
+    margin-top: 0px !important;
+}
+
+.THIS .slds-form-element__control {
+    padding : 0 0 0 0;
+}
+
+.THIS .slds-form-element_horizontal {
+    margin : 0 0 0 0;
+    padding : 0 0 0 0;
+}
+
+.THIS #listbox-unique-id {
+    overflow:visible !important;
+    overflow-y:visible !important;
+    /*position:absolute;*/
+}
+
+.THIS .slds-listbox {
+    position: 40px;
+}

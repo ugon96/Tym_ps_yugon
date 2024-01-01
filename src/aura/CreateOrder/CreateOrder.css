@@ -1,0 +1,154 @@
+/**
+ * Created by yghwang on 2023-10-26.
+ */
+
+.THIS {
+}
+
+.THIS .body {
+    border-top : 1px solid lightgray;
+    position : relative;
+}
+
+.THIS .hover-div {
+    position: absolute;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0.2;
+    visibility: visible;
+}
+
+.THIS .body-left {
+}
+
+.THIS #header-title{
+/*    float:left;*/
+    font-weight:bold;
+    font-size : 20px;
+}
+
+.THIS :host {
+    --slds-c-textarea-sizing-min-height: 200px;
+}
+
+.THIS .accordion-header{
+    border:1px solid lightgray;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.THIS .content-title {
+    font-weight: 500;
+    font-size: 24px;
+}
+.THIS .content-subtitle {
+    font-style: italic;
+    font-size: 14px;
+    line-height: 22px;
+    color: #5f5f5f;
+}
+.THIS .subtotal-description {
+    font-style: italic;
+    font-size: 12px;
+    line-height: 20px;
+    color: #5f5f5f;
+}
+
+.THIS .image-box {
+    width:100%;
+    min-height: 100px;
+    height:auto;
+    white-space: normal;
+    word-wrap: break-word;
+    border : 1px solid lightgray;
+}
+
+.THIS .retail-checkbox {
+    text-align : center;
+    display:grid;
+    align-items:center;
+    height:100%;
+}
+
+.THIS .slds-form-element__label {
+
+}
+
+.THIS .input-label {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.THIS .assembled-checkbox {
+    text-align : center;
+    display:grid;
+    align-items:center;
+    height:100%;
+}
+
+.THIS .slds-accordion__summary-action {
+    background:lightgray;
+}
+.THIS .accordion-description {
+    height : 100px;
+    text-align : center;
+}
+.THIS .amount-calculation-box{
+    height : 50px;
+    text-align : center;
+}
+.THIS .accordion-content {
+    border : 1px solid lightgray;
+    height : 50px;
+    text-align : center;
+}
+.THIS .additional-option-container {
+    max-height : 500px;
+}
+.THIS .option-container {
+    border-top : 1px solid lightgray;
+}
+.THIS .warranty-information-button{
+    width : 100%;
+    height : 50px;
+}
+
+.THIS .warranty-helptext {
+    float : right;
+}
+
+.THIS .slds-input[readonly] {
+    background-color : #f3f3f3;
+    border-color : lightgray;
+}
+
+.THIS .new-customer-button-container {
+    text-align: right;
+}
+.THIS #footer-button-container{
+    border-top : 1px solid lightgray;
+}
+.THIS .custom-button {
+    width : 100%;
+}
+
+/* Order Summary 관련 css */
+.THIS .summary-item-template{
+    background-color: #f3f3f3;
+    /* border: 1px solid gray; */
+}
+.THIS .summary-item-footer-button{
+    line-height : 110%;
+}
+.THIS .invoiced-amount {
+    font-size : 1.05rem;
+}
+.THIS .border-radius {
+    border : 1px solid lightgray;
+    border-radius: 0.25rem;
+}
+.THIS .slds-checkbox_faux{
+    border: 1px solid black;
+}

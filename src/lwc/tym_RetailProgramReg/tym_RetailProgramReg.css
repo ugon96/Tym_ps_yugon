@@ -1,0 +1,146 @@
+/*************************************************************
+ * @author : th.kim
+ * @date : 2023-11-03
+ * @group : 
+ * @group-content :
+ * @description : 
+==============================================================
+ * Ver       Date            Author            Modification
+   1.0       2023-11-03      th.kim            Initial Version
+**************************************************************/
+.slds-size_1-of-24 { width: 4.166666666666667%; }
+.header-title {
+    font-weight: bold;
+}
+
+.save {
+    margin-left: auto;
+    margin-bottom: -5px;
+}
+
+.accordion-section {
+    background-color: #E9E9E9;
+    border: 0;
+    border-radius: 10px;
+}
+
+.accordion-content {
+    background-color: white;
+    border-radius: 0px 0px 10px 10px;
+    border: solid 1px lightgray;
+}
+
+lightning-helptext {
+    position: relative;
+    top: -4px;
+}
+
+input[type=file]::file-selector-button {
+    height: 32px;
+    background-color: #ffffff;
+    padding: 0px 16px 0px 12px;
+    border-radius: var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--lwc-borderRadiusMedium,0.25rem)));
+    border: var(--lwc-borderWidthThin,1px) solid var(--slds-c-input-color-border, var(--sds-c-input-color-border, var(--slds-g-color-border-base-4, var(--lwc-colorBorderInput,rgb(201, 201, 201)))));
+    cursor: pointer;
+}
+
+.salesperson {
+    align-self: center;
+}
+
+.dropdown-input {
+    height: 32px;
+    width: 100%;
+    padding: 0px 16px 0px 12px;
+    border-radius: var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--lwc-borderRadiusMedium,0.25rem)));
+    border: var(--lwc-borderWidthThin,1px) solid var(--slds-c-input-color-border, var(--sds-c-input-color-border, var(--slds-g-color-border-base-4, var(--lwc-colorBorderInput,rgb(201, 201, 201)))));
+    &:focus {
+        outline: 0;
+        border: solid 1px cornflowerblue;
+        box-shadow: 0 0 2px rgb(235, 0, 40);
+    
+    }
+}
+
+.dropdown {
+    /* position: absolute; */
+    overflow-y: auto;
+    z-index: 100;
+    border-radius: var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--lwc-borderRadiusMedium,0.25rem)));
+    border: var(--lwc-borderWidthThin,1px) solid var(--slds-c-input-color-border, var(--sds-c-input-color-border, var(--slds-g-color-border-base-4, var(--lwc-colorBorderInput,rgb(201, 201, 201)))));
+    max-height: 50vh;
+}
+
+.dropdown::-webkit-scrollbar {
+    width: 5px;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+    background: gray;
+    border-radius: 10px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+    background: lightgray;
+    border-radius: 10px;
+}
+
+.dropdown button {
+    background-color: #ffffff;
+    border: 0;
+    cursor: pointer;
+    &:hover {
+        background-color: lightgray;
+    }
+}
+
+.delete-file {
+    border: 0;
+    font-weight: bold;
+    background-color: white;
+    color: gray;
+}
+
+.slide-down {
+    animation-name: slide-down;
+    animation-duration: 0.3s;
+    animation-iteration-count: 1;
+}
+
+.link {
+    align-self: center;
+}
+
+.card-bottom-wrap {
+    overflow-x: auto;
+}
+
+@keyframes slide-down {
+    0% {
+        transform: scaleY(0);
+        transform-origin: 0 0;
+    }
+    100% {
+        transform: scaleY(1);
+        transform-origin: 0 0;
+    }
+}
+
+/* PC, Mobile 화면 체크 */
+@media screen and (min-width: 1024px) {
+    .card-bottom {
+        width: 25%;
+    }
+}
+
+@media screen and (max-width: 1023px) {
+    .card-bottom {
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 540px) {
+    .card-bottom {
+        width: 90%;
+    }
+}

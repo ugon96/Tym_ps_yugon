@@ -1,0 +1,43 @@
+<!--
+ * @author : th.kim
+ * @date : 2023-12-20
+ * @group : 
+ * @group-content : 
+ * @description : 
+==============================================================
+ * Ver          Date            Author          Modification
+   1.0          2023-12-20      th.kim         Initial Version
+-->
+<!-- Tym News Detail -->
+<template>
+    <div class="slds-grid slds-wrap slds-size_1-of-1 wrap">
+        <div class="slds-size_1-of-1 slds-align_absolute-center">
+            <div class="slds-grid slds-wrap slds-size_1-of-2 slds-p-bottom_medium header-box">
+                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-bottom_medium">
+                    <strong>
+                        <button class="slds-button slds-button_brand non-hover" title="Press" data-type="Press" onclick={onTopicClick}>{news.Topic__c}</button>
+                        <a class="slds-p-horizontal_small non-hover" onclick={onCategoryClick}>{news.Category__c}</a>
+                    </strong>
+                    <div class="date">{formatDate}</div>
+                </div>
+                <div class="slds-size_1-of-1 slds-p-bottom_medium slds-text-heading_large title-box">
+                    <strong>{news.Title__c}</strong>
+                </div>
+                <div class="slds-grid slds-wrap slds-size_1-of-1 breadcrumb">
+                    <a onclick={onHomeClick}>TYM</a>
+                    <a class="slds-p-horizontal_medium non-hover" style="font-size: 7px;">></a>
+                    <a onclick={onNewsClick}>TYM News</a>
+                    <a class="slds-p-horizontal_medium non-hover" style="font-size: 7px;">></a>
+                    <a class="non-hover">{formatDate}</a>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="slds-size_1-of-1 slds-align_absolute-center">
+            <div class="slds-size_1-of-2 contents-box">
+                <lightning-formatted-rich-text class="slds-text-heading_small" value={news.Contents__c}></lightning-formatted-rich-text>
+            </div>
+        </div>
+    </div>
+</template>

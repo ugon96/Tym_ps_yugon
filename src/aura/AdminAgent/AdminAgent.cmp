@@ -1,0 +1,29 @@
+<aura:component
+implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+access="global"
+>
+<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+<aura:attribute name="contextId" type="String" access="global" default="null" />
+<aura:attribute name="agents" type="String" access="global" default="null" />
+<aura:attribute name="recordId" type="String" default="null" />
+<aura:attribute name="sObjectName" type="String" default="null" />
+<aura:attribute name="height" type="String" default="500" access="global"/>
+<aura:attribute name="agentsFrame" type="String" />
+<aura:attribute name="ready" type="Boolean" default="false" />
+<aura:attribute name="canvasLoading" type="Boolean" default="true" />
+<div class="container" >
+ <aura:if isTrue="{!v.ready}">
+ 	<iframe width="100%" height="{!v.height}" src="{!v.agentsFrame}"/>
+ </aura:if>
+</div>
+<div class="canvas-block">
+    <aura:if isTrue="{!v.canvasLoading}">
+         <force:canvasApp
+            developerName="AdminAgentsCanvasApp"
+            width="0"
+            height="0"
+            onCanvasAppLoad="{!c.canvasAppLoad}"
+          /> 
+ 	 </aura:if>
+  </div>
+</aura:component>

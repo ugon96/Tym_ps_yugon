@@ -1,0 +1,81 @@
+/**
+ * Created by 천유정 on 2023-10-30.
+ */
+
+.THIS .slds-form-element_horizontal{
+    margin-bottom : 0px !important;
+}
+
+.THIS .customRadioCls .slds-form-element__control .slds-radio{
+    display : inline-block !important;
+}
+
+.THIS .custom-table_wrapper {
+	height: 250px;
+}
+
+.THIS .mb_10 {
+    margin-bottom:10px
+}
+
+.THIS lightning-primitive-header-actions {
+    display: none;
+}
+
+.THIS .slds-has-focus{
+    box-shadow : none !important;
+}
+
+.THIS .slds-resizable__divider:before {
+    background-color : white !important;
+}
+
+.THIS .inputLabelDisplay .slds-form-element__label {
+    display : none;
+}
+
+.THIS .section-height {
+    min-height: 6.6rem !important;
+    max-height: 6.6rem !important;
+}
+
+.THIS .replacement-height {
+    min-height: 10.6rem !important;
+    max-height: 10.6rem !important;
+}
+
+.THIS .released-height {
+    min-height: 7.6rem !important;
+    max-height: 7.6rem !important; 
+}
+
+.THIS .slds-truncate {
+    overflow: initial;
+/*    white-space: break-spaces;*/
+}
+
+.THIS .calendar {
+    overflow: initial;
+}
+
+.THIS .cTable.slds-table_fixed-layout tbody {
+    transform: none !important;
+}
+
+.THIS .custom-button {
+    width:100%;
+}
+
+.THIS .pTable table tr>th {
+    text-align:center;
+}
+
+.THIS .workspace {
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+}

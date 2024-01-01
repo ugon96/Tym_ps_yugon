@@ -1,0 +1,22 @@
+<!--
+ - Created by yghwang on 2023-10-13.
+ -->
+
+<aura:component description="OrderSummaryItemList" implements="force:hasRecordId,flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable,force:hasSObjectName,flexipage:availableForRecordHome,lightning:actionOverride"
+                access="global">
+    <div class="slds-card">
+        <div class="slds-card__header">
+            <lightning:layout multipleRows="true">
+                <lightning:layoutItem size="8">
+                    <h2 class="slds-float_left">Order Summary</h2>
+                </lightning:layoutItem>
+                <lightning:layoutItem size="4">
+                    <p class="slds-float_right">Delivered Assembled</p>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+        <div class="slds-card__body">
+            <!--<c:OrderSummaryItem/>-->
+        </div>
+    </div>
+</aura:component>

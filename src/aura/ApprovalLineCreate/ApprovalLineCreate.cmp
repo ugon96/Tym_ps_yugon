@@ -1,0 +1,171 @@
+<!--
+ - Created by Taejun.Kang on 2023-11-13.
+ -->
+
+<aura:component  controller="ApprovalLineCreateController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName,flexipage:availableForAllPageTypes,force:AppHostAble,force:lightningQuickActionWithoutHeader">>
+
+    <!-- Parameter -->
+    <aura:attribute name="sId" 		   	 	   type="String"  />
+    <aura:attribute name="objUser" 	   	 	   type="User"    />
+    <aura:attribute name="fieldName"   	 	   type="String"  />
+    <aura:attribute name="listLabel"   	 	   type="Object"  />
+    <aura:attribute name="sObjectName"	 	   type="String"  />
+    <aura:attribute name="sHistoryRecordId"	   type="String"  />
+    <aura:attribute name="iApproverLimit"      type="Integer" />
+    <aura:attribute name="ApprovalLineTitle"   type="String"  />
+    <aura:attribute name="bHistory"	   	 	   type="Boolean" default="false"/>
+    <aura:attribute name="title"   type="String"  />
+
+    <!-- Attribute -->
+    <!-- <aura:attribute name="userName" type="String" /> -->
+
+    <!-- Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"  />
+
+    <!-- Event -->
+    <aura:registerEvent name="closeSearchResultEvt" type="c:handleCloseBtnClicked_evt"/>
+
+
+    <!-- Contents -->
+    <div class="custom_modal demo-only" aura:id="divModal">
+
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+            <div class="slds-modal__container slds-modal__container__01">
+
+                <!-- Header -->
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" variant="bare" onclick="{!c.fnClose }" alternativeText="close"
+                                           class="slds-modal__close slds-button_icon-inverse" />
+                    <aura:if isTrue="{!v.bHistory == true }">
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
+                            Approval Process
+                        </h2>
+                        <aura:set attribute="else">
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
+                                Create Approval Line
+                            </h2>
+                        </aura:set>
+                    </aura:if>
+
+                </header>
+
+
+                <!-- Contents -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+
+                    <!-- Line Name Setting -->
+
+                    <!--Submit for Approval-->
+                    <aura:if isTrue="{!v.bHistory == true }">
+
+                    <!--Create Approval Line-->
+                    <aura:set attribute="else">
+                        <lightning:layout class="slds-section slds-is-open slds-section__title slds-theme_shade">
+                            <div class="slds-section__title slds-theme_shade">
+                                <span class="slds-truncate slds-p-horizontal_small" title="Enter Line Title">Approval Line Title</span>
+                            </div>
+                        </lightning:layout>
+                        <lightning:layout>
+                            <div class="display:block;">
+                                <h2 class="slds-text-heading_medium" id="modal-heading-id">{!v.sModalTitle}</h2>
+                                <lightning:input value="{!v.title}"
+                                                 aura:id="LineTitle"
+                                                 type="text"
+                                                 maxlength ="35"
+                                                 class="titlebox01"
+                                                 placeholder="Enter Approval Line Title"
+                                                 required="true"/>
+                            </div>
+                        </lightning:layout>
+                    </aura:set>
+                    </aura:if>
+
+
+                    <!-- Approver Select -->
+                    <lightning:layout class="slds-section slds-is-open slds-section__title slds-theme_shade">
+                        <div class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Select Approver">Approval Line</span>
+                        </div>
+                    </lightning:layout>
+
+
+                    <aura:iteration items="{!v.listLabel.userDatas}" var="user" indexVar="idx" end="{!v.iApproverLimit}">
+                        <lightning:layout>
+
+                            <!-- 승인자 띄우기 -->
+                            <c:DN_Lookup 	aura:id 				= "UserLookup"
+                                            uniqueLookupIdentifier  = "UserLookup"
+                                            fieldSet 				= "['Name' , 'Title' , 'IsActive' ]"
+                                            objectName 				= "User"
+                                            whereCondition 			= " IsActive = true "
+                                            minimumCharacter 		= "1"
+                                            lightningIconName 		= "standard:account"
+                                            displayLabel 			= ""
+                                            selectedId 				= "{!user.Id}"
+                                            selectedLabel  			= "{!user.Name}"
+                                            required 				= "true"
+                                            primaryDisplayField 	= "Name"/>
+
+                            <lightning:buttonIcon variant="border-filled" size="x-small" iconName="utility:dash"  name="{!idx}" onclick="{!c.fnDeleteRow}" class="custom-icon-center"/>
+
+                        </lightning:layout>
+
+                        <!-- 화살표 띄우기 -->
+                        <lightning:layout horizontalAlign="center">
+                            <aura:if isTrue="{! idx+1 != v.listLabel.userDatas.length}">
+                                <!-- <aura:if isTrue="{! idx != 3}"> -->
+                                <div style="text-align: right;">
+                                    <lightning:icon  iconName="utility:arrowdown" size="small"/> {!idx +2} step
+                                </div>
+                            </aura:if>
+                        </lightning:layout>
+                    </aura:iteration>
+                    <!--<div style="height:30px; background-color:white;"></div>-->
+                    <lightning:layout>
+                        <lightning:button aura:id="addApprover" label="Add approver"
+                                          class="slds-button slds-button_neutral slds-button_stretch"
+                                          variant="Neutral"
+                                          title="승인자 추가"
+                                          onclick="{!c.fnAddRow}"
+                                          iconPosition="right">Add Approver
+                        </lightning:button>
+                    </lightning:layout>
+
+                    <!--Submit 일 때-->
+                    <aura:if isTrue="{!v.bHistory == true}" >
+                        &nbsp;&nbsp;
+                        <lightning:layout class="slds-section slds-is-open slds-section__title slds-theme_shade">
+                            <div class="slds-section__tit le slds-theme_shade">
+                                <span class="slds-truncate slds-p-horizontal_small" title="">Comment</span>
+                            </div>
+                        </lightning:layout>
+
+
+                        <!--<lightning:buttonIcon iconName="utility:close" size="small" alternativeText="Close"
+                                              variant="bare-inverse" class="slds-modal__close" onclick="{!c.fnCancel}" />-->
+                        <h2 class="slds-text-heading_medium" id="modal-heading-id">{!v.sModalTitle}</h2>
+                        <ui:inputTextArea aura:id="comments"  rows="3" value="" />
+                    </aura:if>
+                </div>
+
+
+
+                <!-- Footer -->
+                <footer class="slds-modal__footer">
+                    <lightning:button class="slds-button slds-button_neutral" onclick="{!c.fnClose}">Cancel</lightning:button>
+                    <aura:if isTrue="{!v.bHistory == true }">
+                        <lightning:button 	  variant="brand" label="" onclick="{!c.fnSubmit}" >Submit</lightning:button>
+                        <aura:set attribute="else">
+                            <lightning:button variant="brand" label="" onclick="{!c.fnSave}" >Save</lightning:button>
+                        </aura:set>
+                    </aura:if>
+                </footer>
+
+            </div>
+        </section>
+
+        <aura:if isTrue="{!v.bHistory == false}">
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

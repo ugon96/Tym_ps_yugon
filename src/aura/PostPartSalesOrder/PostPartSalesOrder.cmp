@@ -1,0 +1,34 @@
+<!--
+ - Created by taekyun.yoon on 2023-11-22.
+ -->
+
+<aura:component description="PostPartSalesOrder" controller="PostPartSalesOrderController" implements="force:hasRecordId,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes">
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}" />
+    <aura:attribute name="recordId" type="String" default=""/>
+
+    <section role="alertdialog" tabindex="-1" aria-labelledby="modal-heading-id" aria-describedby="modal-content-id" class="slds-modal slds-modal_large slds-fade-in-open" aria-modal="true">
+        <aura:if isTrue="{!v.isShowSpinner}">
+            <lightning:spinner aura:id="spinner" alternativeText="Loading" variant="brand" size="large" />
+        </aura:if>
+
+        <div class="slds-modal__container"> 
+            <!-- Header -->
+            <header class="slds-modal__header">
+                <h2 class="slds-text-heading_medium" id="modal-heading-id">Send to SAP</h2>
+            </header>
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="overflow:clip;">
+                <lightning:layout>
+                    <lightning:layoutItem size="12">
+                        <div style="text-align:center;">
+                            Would you like to send this data to SAP?
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            <footer class="slds-modal__footer">
+                <lightning:button label="Cancel" onclick="{!c.clickCancel}"/>
+                <lightning:button label="Send" onclick="{!c.clickSend}" variant="brand"/>
+            </footer>
+        </div>
+    </section>
+</aura:component>

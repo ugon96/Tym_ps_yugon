@@ -1,0 +1,538 @@
+<!--
+ - Created by yghwang on 2023-10-20.
+ -->
+
+<aura:component description="CreateOrder" controller="CreateOrderController"
+                implements="force:hasRecordId,flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable,force:hasSObjectName,flexipage:availableForRecordHome,lightning:actionOverride,forceCommunity:availableForAllPageTypes"
+                access="global">
+    <lightning:workspaceAPI aura:id="workspace"/>
+
+    <aura:attribute name="isPortalUser" type="Boolean" default="true"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="summaryIndex" type="Integer" default="0"/>
+    <aura:attribute name="objOrderSummary" type="Object"/>
+    <aura:attribute name="priceListId" type="String"/>
+
+    <!-- Edit OrderItem 용 -->
+    <aura:attribute name="objConfig" type="String"/>
+    <aura:attribute name="objTires" type="String"/>
+    <aura:attribute name="objLoader" type="String"/>
+    <aura:attribute name="objBackhoe" type="String"/>
+    <aura:attribute name="objMower" type="String"/>
+    <aura:attribute name="objOptions" type="List" default="[]"/>
+
+    <!-- Input Value   -->
+    <aura:attribute name="inputModel" type="Object"/>
+    <aura:attribute name="inputConfig" type="Object"/>
+    <aura:attribute name="inputTire" type="Object"/>
+    <aura:attribute name="inputLoader" type="Object"/>
+    <aura:attribute name="inputBackhoe" type="Object"/>
+    <aura:attribute name="inputMower" type="Object"/>
+
+    <aura:attribute name="isEditable" type="Boolean" default="false"/>
+    <aura:attribute name="isUpdateOrder" type="Boolean" default="false"
+                    description="현재 구성하고 있는 Order Summary가 새로 생성인지 업데이트인지 여부"/>
+    <aura:attribute name="isImplements" type="Boolean" default="false"/>
+
+    <!-- Major Configuration   -->
+    <aura:attribute name="imageUrl" type="String" description="트랙터의 이미지 url"/>
+    <aura:attribute name="modelOptions" type="List" default="[]"/>
+    <aura:attribute name="configOptions" type="List"
+                    default="[{'label':'----none----', 'value':null}]"/>
+    <aura:attribute name="tireOptions" type="List" default="[{'label':'----none----', 'value':null}]"/>
+    <aura:attribute name="isAssembled" type="Boolean" default="false" description="트랙터, Configuration, 타이어를 조립할 지 여부"/>
+
+    <!-- Attachments   -->
+    <aura:attribute name="loaderOptions" type="List" default="[]"/>
+    <aura:attribute name="selectedLoader" type="Object" default=""/>
+    <aura:attribute name="isLoaderAssembled" type="Boolean" default="false"/>
+    <aura:attribute name="backhoeOptions" type="List" default="[]"/>
+    <aura:attribute name="selectedBackhoe" type="Object" default=""/>
+    <aura:attribute name="isBackhoeAssembled" type="Boolean" default="false"/>
+    <aura:attribute name="mowerOptions" type="List" default="[]"/>
+    <aura:attribute name="selectedMower" type="Object" default=""/>
+    <aura:attribute name="isMowerAssembled" type="Boolean" default="false"/>
+
+    <!-- Additional Options   -->
+    <aura:attribute name="additionalOptions" type="List" default="[]"/>
+    <aura:attribute name="selectedAdditionalOptions" type="List" default="[]"/>
+
+    <!-- Item Notes   -->
+    <aura:attribute name="isRetailed" type="Boolean" default="false" description="트랙터가 판매됐는지 여부"/>
+    <aura:attribute name="orderQuantity" type="Integer" default="1"/>
+    <aura:attribute name="poNumber" type="String" default=""/>
+    <aura:attribute name="notes" type="String" default=""/>
+    <aura:attribute name="subtotal" type="Decimal" default="0"/>
+
+    <!-- Order Summary List -->
+    <aura:attribute name="listOrderSummary" type="List" default="[]"/>
+
+    <!-- total Amount  -->
+    <aura:attribute name="totalAmount" type="Decimal" default="0"/>
+    <aura:attribute name="discount" type="Decimal" default="0"/>
+    <aura:attribute name="orderStatus" type="String" default="false"/>
+    <aura:attribute name="invoicedAmount" type="Decimal" default="1000000"/>
+
+    <!-- Standard Record Edit 감지하고 Refresh -->
+    <aura:handler event="force:refreshView" action="{!c.fnInit}"/>
+
+    <aura:attribute name="toggleSpinner" type="Boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.fnInit}"/>
+
+    <aura:if isTrue="{!v.toggleSpinner}">
+        <lightning:spinner variant="brand" size="large" alternativeText="Loading..."/>
+    </aura:if>
+
+    <div class="slds-card slds-p-around_small slds-form-element_readonly">
+        <div class="header slds-p-around_small">
+            <span id="header-title">{!$Label.c.Order_Tractor}</span>
+            <div id="header-button-container" class="slds-float_right">
+                <aura:if
+                        isTrue="{!or(or(v.orderStatus == 'Created', v.orderStatus == 'Submitted'), not(v.isPortalUser))}">
+                    <aura:if isTrue="{!v.isEditable}">
+                        <lightning:button name="{!$Label.c.Discard}" label="{!$Label.c.Discard}"
+                                          onclick="{!c.handleDiscardBtnClicked}"></lightning:button>
+                        <lightning:button name="{!$Label.c.Save}" label="{!$Label.c.Save}"
+                                          disabled="{!or (v.listOrderSummary.length==0 , v.isUpdateOrder)}"
+                                          onclick="{!c.handleSaveBtnClicked}" variant="Destructive"></lightning:button>
+                        <aura:set attribute="else">
+                            <lightning:button name="AddOrEdit" label="Add / Edit" onclick="{!c.handleEditBtnClicked}"/>
+                        </aura:set>
+                    </aura:if>
+                </aura:if>
+            </div>
+        </div>
+        <div class="body">
+            <!--<aura:if isTrue="{! not(v.isEditable)}">
+                <div class="hover-div"></div>
+            </aura:if>-->
+            <lightning:layout multipleRows="true">
+                <!--      Sale Information              -->
+                <lightning:layoutItem class="body-left slds-p-around_small" size="6">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-title" id="Sale-Info-title">
+                                <span>
+                                    {!$Label.c.Major_Configuration}
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-subtitle" id="Sale-Info-title">
+                                <span>
+                                    {!$Label.c.Major_Configuration_Subtitle}
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="slds-p-around_small" style="background-color:#f3f3f3">
+                                Tractor, Configuration &amp; Tires
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <lightning:layout multipleRows="false">
+                                <lightning:layoutItem size="9">
+                                    <div class="">
+                                        <aura:if isTrue="{!and(v.imageUrl != null, v.imageUrl != '')}">
+                                            <img class="image-box slds-text-align_center" src="{!v.imageUrl}"/>
+                                            <aura:set attribute="else">
+                                                <div class="image-box slds-text-align_center slds-align-middle">
+                                                    <p class="slds-align-middle">No Tractor Image</p>
+                                                </div>
+                                            </aura:set>
+                                        </aura:if>
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="" size="3">
+                                    <div class="assembled-checkbox">
+                                        <lightning:input aura:id="isAssembled" label="Assembled (Y/N)"
+                                                         type="checkbox"
+                                                         disabled="{!or(not(v.isEditable), v.isImplements)}"
+                                                         checked="{!v.isAssembled}"/>
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+
+                            <div>
+                                <lightning:select aura:id="selectModel" label="Model" name="selectModel"
+                                                  disabled="{!not(v.isEditable)}"
+                                                  value="{!v.inputModel}"
+                                                  onchange="{!c.handleModelChanged}">
+                                    <aura:iteration items="{!v.modelOptions}" var="modelOption">
+                                        <option text="{!modelOption}" value="{!modelOption}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            <div>
+                                <lightning:select aura:id="selectConfig" label="Configuration" name="selectConfig"
+                                                  disabled="{!not(v.isEditable)}"
+                                                  value="{!v.inputConfig}"
+                                                  onchange="{!c.handleConfigChanged}">
+                                    <aura:iteration items="{!v.configOptions}" var="configOption" indexVar="idx">
+                                        <option text="{!configOption.label}" value="{!configOption.value}"
+                                                accesskey="idx"
+                                                selected="{!configOption.selected}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            <div>
+                                <lightning:select aura:id="selectTire" label="Tires" name="selectTire"
+                                                  disabled="{!not(v.isEditable)}"
+                                                  value="{!v.inputTire}"
+                                                  onchange="{!c.handleTireChanged}">
+                                    <aura:iteration items="{!v.tireOptions}" var="tireOption">
+                                        <option text="{!tireOption.label}" value="{!tireOption.value}"
+                                                selected="{!tireOption.selected}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div>
+                                <div class="content-title option-container slds-p-vertical_small"
+                                     id="Sale-Info-title">
+                                    <span>
+                                        Attachments
+                                    </span>
+                                </div>
+                            </div>
+                            <lightning:layout multipleRows="true">
+                                <lightning:layoutItem size="9">
+                                    <div class="content-subtitle" id="Sale-Info-title">
+                                        <span>
+                                            Select the Attachments you would like with your tractor order.
+                                        </span>
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem class="slds-container_center slds-text-align_center" size="3">
+                                    is Assembled (Y/N)
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                            <div>
+                                <lightning:layout multipleRows="true">
+                                    <lightning:layoutItem size="9">
+                                        <div>
+                                            <lightning:select aura:id="selectLoader" label="Loader"
+                                                              name="selectLoader"
+                                                              disabled="{!not(v.isEditable)}"
+                                                              value="{!v.inputLoader}"
+                                                              onchange="{!c.handleLoaderChanged}">
+                                                <aura:iteration items="{!v.loaderOptions}" var="loaderOption">
+                                                    <option text="{!loaderOption.label}"
+                                                            selected="{!loaderOption.selected}"
+                                                            value="{!loaderOption.value}"/>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem
+                                            class="slds-text-align_center slds-container_center slds-p-top_large"
+                                            size="3">
+                                        <lightning:input class="slds-p-around_xx-small" id="isLoaderAssembled"
+                                                         disabled="{!or(not(v.isEditable), v.isImplements)}"
+                                                         aura:id="isLoaderAssembled"
+                                                         variant="label-hidden" label="is Assembled(Y/N)"
+                                                         type="checkbox" checked="{!v.isLoaderAssembled}"/>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="9">
+                                        <div>
+                                            <lightning:select aura:id="selectBackhoe" label="Backhoe"
+                                                              disabled="{!not(v.isEditable)}"
+                                                              value="{!v.inputBackhoe}"
+                                                              onchange="{!c.handleBackhoeChanged}"
+                                                              name="selectBackhoe">
+                                                <aura:iteration items="{!v.backhoeOptions}" var="backhoeOption"
+                                                                indexVar="idx">
+                                                    <option text="{!backhoeOption.label}"
+                                                            selected="{!backhoeOption.selected}"
+                                                            value="{!backhoeOption.value}"/>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem
+                                            class="slds-text-align_center slds-container_center slds-p-top_large"
+                                            size="3">
+                                        <lightning:input class="slds-p-around_xx-small" id="isBackhoeAssembled"
+                                                         disabled="{!or(not(v.isEditable), v.isImplements)}"
+                                                         aura:id="isBackhoeAssembled"
+                                                         variant="label-hidden" label="is Assembled(Y/N)"
+                                                         type="checkbox" checked="{!v.isBackhoeAssembled}"/>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="9">
+                                        <div>
+                                            <lightning:select aura:id="selectMower" label="Mower"
+                                                              disabled="{!not(v.isEditable)}"
+                                                              value="{!v.inputMower}"
+                                                              onchange="{!c.handleMowerChanged}"
+                                                              name="selectMower">
+                                                <aura:iteration items="{!v.mowerOptions}" var="mowerOption">
+                                                    <option text="{!mowerOption.label}"
+                                                            selected="{!mowerOption.selected}"
+                                                            value="{!mowerOption.value}"/>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem
+                                            class="slds-text-align_center slds-container_center slds-p-top_large"
+                                            size="3">
+                                        <lightning:input class="slds-p-around_xx-small" id="isMowerAssembled"
+                                                         aura:id="isMowerAssembled"
+                                                         disabled="{!or(not(v.isEditable), v.isImplements)}"
+                                                         variant="label-hidden" label="is Assembled(Y/N)"
+                                                         type="checkbox" checked="{!v.isMowerAssembled}"/>
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div>
+                                <div class="content-title option-container slds-p-vertical_small"
+                                     id="Sale-Info-title">
+                                    <span>
+                                        Additional Options
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="content-subtitle" id="Sale-Info-title">
+                                <span>
+                                    Select the Add-Ons you would like with your tractor order.
+                                </span>
+                            </div>
+                            <div class="additional-option-container slds-scrollable_y">
+                                <table class="slds-table slds-size_1-of-1 slds-table_bordered slds-table_striped">
+                                    <thead>
+                                    <tr>
+                                        <th colspan="2">Item</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <aura:if isTrue="{!v.additionalOptions.length > 0}">
+                                        <aura:iteration items="{!v.additionalOptions}" var="option" indexVar="idx">
+                                            <tr>
+                                                <td>
+                                                    <lightning:input label="{!option.label}" type="checkbox"
+                                                                     checked="{!option.checked}"
+                                                                     accesskey="{!option.value}"
+                                                                     onchange="{!c.handleOptionChecked}"
+                                                                     disabled="{!not(v.isEditable)}"
+                                                                     variant="label-hidden"/>
+                                                </td>
+                                                <td>
+                                                    <div>{!option.label}</div>
+                                                </td>
+                                            </tr>
+                                        </aura:iteration>
+                                        <aura:set attribute="else">
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="slds-p-around_small slds-grid_vertical-align-center slds-text-align_center"
+                                                         style="">
+                                                        <p>No results found</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </aura:set>
+                                    </aura:if>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div>
+                                <div class="content-title option-container slds-p-vertical_small"
+                                     id="Sale-Info-title">
+                                    <span>
+                                        Item Notes
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="content-subtitle" id="Sale-Info-title">
+                                <span>
+                                    Tell us a little bit more about your order.
+                                </span>
+                            </div>
+                            <div>
+                                <lightning:layout multipleRows="true">
+                                    <lightning:layoutItem size="12">
+                                        <lightning:layout multipleRows="false">
+                                            <lightning:layoutItem size="6">
+                                                <div>
+                                                    <lightning:input class="item-note-content"
+                                                                     label="Quantity" type="Number" min="1"
+                                                                     readonly="{!not(v.isEditable)}"
+                                                                     required="true" value="{!v.orderQuantity}"
+                                                                     messageWhenBadInput="Please enter a number greater than or equal to 1"
+                                                                     step="1"/>
+                                                </div>
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem size="6">
+                                                <div class="assembled-checkbox">
+                                                    <lightning:input aura:id="isRetailed" label="Retailed"
+                                                                     disabled="{!not(v.isEditable)}"
+                                                                     type="checkbox"
+                                                                     checked="{!v.isRetailed}"/>
+                                                </div>
+                                            </lightning:layoutItem>
+                                        </lightning:layout>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="12">
+                                        <div>
+                                            <lightning:input class="item-note-content" label="PO Number" type="text"
+                                                             value="{!v.poNumber}"
+                                                             readonly="{!not(v.isEditable)}"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="12">
+                                        <div>
+                                            <lightning:input label="Notes" type="text" value="{!v.notes}"
+                                                             readonly="{!not(v.isEditable)}"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="4"
+                                                          class="slds-p-around_xx-small slds-text-title_bold subtotal-container slds-float_left">
+                                        <div>
+                                            <p>Subtotal : </p>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="8"
+                                                          class="slds-p-around_xx-small slds-float_right subtotal-container">
+                                        <div>
+                                            <p class="slds-float_right">
+                                                <lightning:formattedNumber value="{!v.subtotal * v.orderQuantity}"
+                                                                           style="currency"
+                                                                           currencyCode="USD"
+                                                                           step=".01"/>
+                                            </p>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="12">
+                                        <div class="subtotal-description">
+                                            <p>※ Amount may vary depending on payment term, discount rate, and bank
+                                                policy.</p>
+                                        </div>
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </lightning:layoutItem>
+
+                    </lightning:layout>
+                </lightning:layoutItem>
+
+                <!-- Order Summary List -->
+                <lightning:layoutItem class="body-right slds-p-around_small slds-scrollable_y" size="6">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem class="slds-p-around_small" size="12">
+                            <div class="content-title" id="Sale-Info-title">
+                                <span>
+                                    Order Summary
+                                </span>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12">
+                            <article style="width:100%"
+                                     class="slds-card slds-card_boundary slds-size_1-of-2 slds-color__background_gray-3">
+                                <div class="slds-card__body slds-card__body_inner">
+                                    <div class="slds-grid slds-wrap">
+                                        <!--<div class="slds-col slds-size_2-of-2" style="padding-bottom:0.5rem"><b>Total
+                                                Line Number : {!v.listOrderSummary.length}</b></div>-->
+                                        <div class="slds-col slds-size_1-of-2">Base Amount :</div>
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <lightning:formattedNumber value="{!v.totalAmount}"
+                                                                       style="currency" currencyCode="USD"/>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2">Discount :</div>
+                                        <div class="slds-col slds-size_1-of-2">{!v.discount} %</div>
+                                    </div>
+                                </div>
+                                <footer class="slds-card__footer slds-text-align_left">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-2"><b>Estimated :</b></div>
+                                        <div class="slds-col slds-size_1-of-2"><b>
+                                                <lightning:formattedNumber
+                                                        value="{!v.totalAmount - (v.totalAmount * v.discount / 100)}"
+                                                        style="currency" currencyCode="USD"/>
+                                            </b></div>
+                                    </div>
+                                </footer>
+                            </article>
+                            <lightning:button class="slds-m-top_small custom-button slds-m-bottom_small"
+                                              variant="brand"
+                                              name="Submit"
+                                              label="{!if(v.orderStatus == 'Created', 'Submit', 'Already Submitted')}"
+                                              onclick="{!c.handleSubmitButtonClicked}"
+                                              iconName="utility:checkout"
+                                              disabled="{!or(v.listOrderSummary.length == 0, or(v.orderStatus != 'Created', v.isEditable))}"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12">
+                            <aura:iteration items="{!v.listOrderSummary}" var="objOrderSummary" indexVar="idx">
+                                <div class="border-radius summary-item-template slds-p-around_xxx-small slds-m-bottom_small">
+                                    <c:OrderSummaryItem objSummary="{!objOrderSummary}"/>
+                                    <div class="summary-item-footer slds-align_absolute-center slds-p-around_xxx-small">
+                                        <lightning:button class="summary-item-footer-button" variant="Neutral"
+                                                          label="Edit Item" disabled="{!not(v.isEditable)}"
+                                                          title="Edit Item" accesskey="{!idx}"
+                                                          onclick="{!c.handleEditItemBtnClicked}"/>
+                                        <lightning:button class="summary-item-footer-button"
+                                                          variant="destructive"
+                                                          label="Delete Item" title="Delete Item"
+                                                          accesskey="{!idx}"
+                                                          disabled="{!not(v.isEditable)}"
+                                                          onclick="{!c.handleDeleteItemBtnClicked}"/>
+                                        <!--<lightning:button class="summary-item-footer-button" variant="Neutral"
+                                                          label="Duplicate Item" title="Duplicate Item"
+                                                          accesskey="{!idx}"
+                                                          disabled="{!not(v.isEditable)}"
+                                                          onclick="{!c.handleDuplicateItemBtnClicked}"/>-->
+                                    </div>
+                                </div>
+                            </aura:iteration>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:layoutItem>
+
+                <!-- Footer -->
+                <lightning:layoutItem size="12">
+                    <div id="footer-button-container" class="slds-p-around_small">
+                        <div class="slds-float_left">
+                            <aura:if isTrue="{!v.isEditable}">
+                                <aura:if isTrue="{!v.isUpdateOrder}">
+                                    <lightning:button name="Update Order" label="Update Order"
+                                                      onclick="{!c.handleUpdateOrderBtnClicked}"/>
+                                    <aura:set attribute="else">
+                                        <lightning:button name="Add to Order" label="Add to Order"
+                                                          onclick="{!c.handleAddOrderBtnClicked}"/>
+                                    </aura:set>
+                                </aura:if>
+                            </aura:if>
+                        </div>
+                        <div class="slds-float_right">
+                            <!--                            <div class="slds-size_2-of-3 invoiced-amount">-->
+                            <!--                                <b>Invoiced Amount : </b> $ {!v.invoicedAmount}-->
+                            <!--                            </div>-->
+<!--                            <div class="slds-size_1-of-3 slds-float_right">-->
+                                <aura:if
+                                        isTrue="{!or(or(v.orderStatus == 'Created', v.orderStatus == 'Submitted'), not(v.isPortalUser))}">
+                                    <aura:if isTrue="{!v.isEditable}">
+                                        <lightning:button name="{!$Label.c.Discard}" label="{!$Label.c.Discard}"
+                                                          onclick="{!c.handleDiscardBtnClicked}"></lightning:button>
+                                        <lightning:button name="{!$Label.c.Save}" label="{!$Label.c.Save}"
+                                                          disabled="{!or (v.listOrderSummary.length==0 , v.isUpdateOrder)}"
+                                                          onclick="{!c.handleSaveBtnClicked}"
+                                                          variant="Destructive"></lightning:button>
+                                        <aura:set attribute="else">
+                                            <lightning:button name="AddOrEdit" label="Add / Edit"
+                                                              onclick="{!c.handleEditBtnClicked}">
+                                            </lightning:button>
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:if>
+<!--                            </div>-->
+                        </div>
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </div>
+    </div>
+</aura:component>

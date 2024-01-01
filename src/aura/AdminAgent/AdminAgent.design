@@ -1,0 +1,5 @@
+<design:component>
+<design:attribute name="contextId" label="Context Id" />
+<design:attribute name="agents" label="Agent Ids" />
+<design:attribute name="height" label="Component Height" default="500" />
+</design:component>

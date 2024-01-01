@@ -1,0 +1,9 @@
+<!--
+ - Created by Taejun.Kang on 2023-11-13.
+ -->
+
+<design:component>
+    <design:attribute name="bHistory" label="bHistory" description="" />
+    <design:attribute name="sComponentName" label="Title" description="Enter the Title" />
+    <design:attribute name="sIconName" label="Icon Name" description="Enter Icon Name" />
+</design:component>

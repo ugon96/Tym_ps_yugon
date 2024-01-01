@@ -1,0 +1,14 @@
+<apex:page StandardController="User" >
+
+    <apex:includeLightning />
+    
+
+    <script>
+        $Lightning.use("c:AssetSignatureApp", function() {
+            $Lightning.createComponent("c:AssetSignatureForm", {}, function(cmp){
+                console.log("성공");
+            });
+        });
+    </script>
+
+</apex:page>
